@@ -26,7 +26,6 @@ BingeBoard is an Android application designed to help users track their favorite
 The application primarily uses the **TVmaze API** for all TV show data, including search, details, and schedules. 
 
 - **TVmaze**: Primary source for TV shows and schedules.
-- **TMDB**: Support for TMDB and movie entries is currently deprecated/skipped in the current implementation in favor of TVmaze's comprehensive TV data.
 
 ## License
 
