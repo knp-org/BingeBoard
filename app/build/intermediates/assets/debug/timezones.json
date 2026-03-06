@@ -1,0 +1,90 @@
+[
+    {
+        "code": "Asia/Kolkata",
+        "name": "India (IST, UTC+5:30)"
+    },
+    {
+        "code": "America/New_York",
+        "name": "US Eastern (EST, UTC-5)"
+    },
+    {
+        "code": "America/Chicago",
+        "name": "US Central (CST, UTC-6)"
+    },
+    {
+        "code": "America/Denver",
+        "name": "US Mountain (MST, UTC-7)"
+    },
+    {
+        "code": "America/Los_Angeles",
+        "name": "US Pacific (PST, UTC-8)"
+    },
+    {
+        "code": "Europe/London",
+        "name": "UK (GMT, UTC+0)"
+    },
+    {
+        "code": "Europe/Berlin",
+        "name": "Germany (CET, UTC+1)"
+    },
+    {
+        "code": "Europe/Paris",
+        "name": "France (CET, UTC+1)"
+    },
+    {
+        "code": "Europe/Moscow",
+        "name": "Russia (MSK, UTC+3)"
+    },
+    {
+        "code": "Asia/Dubai",
+        "name": "UAE (GST, UTC+4)"
+    },
+    {
+        "code": "Asia/Tokyo",
+        "name": "Japan (JST, UTC+9)"
+    },
+    {
+        "code": "Asia/Seoul",
+        "name": "South Korea (KST, UTC+9)"
+    },
+    {
+        "code": "Asia/Shanghai",
+        "name": "China (CST, UTC+8)"
+    },
+    {
+        "code": "Asia/Hong_Kong",
+        "name": "Hong Kong (HKT, UTC+8)"
+    },
+    {
+        "code": "Asia/Singapore",
+        "name": "Singapore (SGT, UTC+8)"
+    },
+    {
+        "code": "Asia/Bangkok",
+        "name": "Thailand (ICT, UTC+7)"
+    },
+    {
+        "code": "Asia/Jakarta",
+        "name": "Indonesia (WIB, UTC+7)"
+    },
+    {
+        "code": "Australia/Sydney",
+        "name": "Australia Eastern (AEST, UTC+10)"
+    },
+    {
+        "code": "Pacific/Auckland",
+        "name": "New Zealand (NZST, UTC+12)"
+    },
+    {
+        "code": "America/Sao_Paulo",
+        "name": "Brazil (BRT, UTC-3)"
+    },
+    {
+        "code": "America/Toronto",
+        "name": "Canada Eastern (EST, UTC-5)"
+    },
+    {
+        "code": "America/Vancouver",
+        "name": "Canada Pacific (PST, UTC-8)"
+    }
+]
