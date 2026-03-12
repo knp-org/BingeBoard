@@ -26,11 +26,16 @@ import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.SettingsBrightness
+import androidx.compose.material.icons.outlined.VpnKey
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -65,6 +70,8 @@ fun SettingsScreen(
     val region by viewModel.region.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
     val timezone by viewModel.timezone.collectAsStateWithLifecycle()
+    val tvdbApiKey by viewModel.tvdbApiKey.collectAsStateWithLifecycle()
+    val useTvdb by viewModel.useTvdb.collectAsStateWithLifecycle()
 
     // Locale options loaded from JSON assets
     val regionOptions = viewModel.localeOptionsProvider.regions
@@ -140,6 +147,79 @@ fun SettingsScreen(
                         options = timezoneOptions,
                         onOptionSelected = { viewModel.updateTimezone(it) }
                     )
+                }
+
+                // ── API Integration Section ────────────────────────────
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .glassSurface(elevation = 4.dp)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "API Integrations",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "Customize the data sources used to fetch TV shows.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Use TVDB API",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "If enabled, TVDB will be used instead of TVMaze for searches and TV show details.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = useTvdb,
+                            onCheckedChange = { viewModel.updateUseTvdb(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = Primary,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        )
+                    }
+
+                    if (useTvdb) {
+                        OutlinedTextField(
+                            value = tvdbApiKey,
+                            onValueChange = { viewModel.updateTvdbApiKey(it) },
+                            label = { Text("TVDB API Key v4") },
+                            placeholder = { Text("Enter your TVDB API Key") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.VpnKey,
+                                    contentDescription = null,
+                                    tint = Primary
+                                )
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Primary,
+                                focusedLabelColor = Primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                            )
+                        )
+                    }
                 }
 
                 // ── Theme Section ──────────────────────────────────────

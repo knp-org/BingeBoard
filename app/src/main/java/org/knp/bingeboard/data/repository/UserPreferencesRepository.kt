@@ -32,6 +32,8 @@ class UserPreferencesRepository @Inject constructor(
         val REGION = stringPreferencesKey("region")
         val LANGUAGE = stringPreferencesKey("language")
         val TIMEZONE = stringPreferencesKey("timezone")
+        val TVDB_API_KEY = stringPreferencesKey("tvdb_api_key")
+        val USE_TVDB = androidx.datastore.preferences.core.booleanPreferencesKey("use_tvdb")
     }
 
     val themeMode: Flow<ThemeMode> = context.dataStore.data
@@ -70,6 +72,22 @@ class UserPreferencesRepository @Inject constructor(
             preferences[PreferencesKeys.TIMEZONE] ?: "Asia/Kolkata"
         }
 
+    val tvdbApiKey: Flow<String> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.TVDB_API_KEY] ?: ""
+        }
+
+    val useTvdb: Flow<Boolean> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.USE_TVDB] ?: false
+        }
+
     suspend fun updateThemeMode(themeMode: ThemeMode) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.THEME_MODE] = themeMode.ordinal
@@ -91,6 +109,18 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun updateTimezone(timezone: String) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.TIMEZONE] = timezone
+        }
+    }
+
+    suspend fun updateTvdbApiKey(apiKey: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TVDB_API_KEY] = apiKey
+        }
+    }
+
+    suspend fun updateUseTvdb(useTvdb: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.USE_TVDB] = useTvdb
         }
     }
 }

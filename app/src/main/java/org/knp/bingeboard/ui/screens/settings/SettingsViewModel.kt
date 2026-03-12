@@ -46,6 +46,20 @@ class SettingsViewModel @Inject constructor(
             initialValue = "Asia/Kolkata"
         )
 
+    val tvdbApiKey: StateFlow<String> = preferencesRepository.tvdbApiKey
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ""
+        )
+
+    val useTvdb: StateFlow<Boolean> = preferencesRepository.useTvdb
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
     fun updateThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
             preferencesRepository.updateThemeMode(mode)
@@ -67,6 +81,18 @@ class SettingsViewModel @Inject constructor(
     fun updateTimezone(timezone: String) {
         viewModelScope.launch {
             preferencesRepository.updateTimezone(timezone)
+        }
+    }
+
+    fun updateTvdbApiKey(apiKey: String) {
+        viewModelScope.launch {
+            preferencesRepository.updateTvdbApiKey(apiKey)
+        }
+    }
+
+    fun updateUseTvdb(useTvdb: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.updateUseTvdb(useTvdb)
         }
     }
 }

@@ -6,11 +6,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.knp.bingeboard.data.repository.TvdbRepository
 import org.knp.bingeboard.data.repository.TvMazeRepository
+import org.knp.bingeboard.data.repository.UserPreferencesRepository
 import javax.inject.Inject
 
 /**
@@ -38,7 +41,9 @@ data class SearchUiState(
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val tvMazeRepository: TvMazeRepository
+    private val tvMazeRepository: TvMazeRepository,
+    private val tvdbRepository: TvdbRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
@@ -76,35 +81,55 @@ class SearchViewModel @Inject constructor(
     private suspend fun performSearch(query: String) {
         _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-        // Search TVmaze (TV shows)
-        val tvMazeDeferred = viewModelScope.async {
-            tvMazeRepository.searchShows(query)
-        }
-
+        val useTvdb = userPreferencesRepository.useTvdb.first()
         val combined = mutableListOf<SearchDisplayItem>()
 
-        // TVmaze results → TV shows
-        tvMazeDeferred.await().getOrNull()?.forEach { result ->
-            val show = result.show
-            // Default to TV type since it's TVmaze
-            // You can also change the label later if needed, but keeping it "tv" for now
-            combined.add(
-                SearchDisplayItem(
-                    id = show.id,
-                    mediaType = "tv",
-                    source = "tvmaze",
-                    displayName = show.name,
-                    overview = tvMazeRepository.cleanSummary(show.summary),
-                    posterUrl = show.image?.medium,
-                    voteAverage = show.rating?.average ?: 0.0,
-                    year = show.premiered?.take(4),
-                    score = result.score
+        if (useTvdb) {
+            val tvdbDeferred = viewModelScope.async {
+                tvdbRepository.searchSeries(query)
+            }
+            tvdbDeferred.await().getOrNull()?.data?.forEach { result ->
+                combined.add(
+                    SearchDisplayItem(
+                        id = result.tvdb_id?.removePrefix("series-")?.toIntOrNull() ?: 0,
+                        mediaType = "tv",
+                        source = "tvdb",
+                        displayName = result.name ?: "Unknown",
+                        overview = result.overview,
+                        posterUrl = result.image_url,
+                        voteAverage = 0.0, // TVDB search doesn't return score easily in v4
+                        year = result.year,
+                        score = 0.0
+                    )
                 )
-            )
+            }
+        } else {
+            // Search TVmaze (TV shows)
+            val tvMazeDeferred = viewModelScope.async {
+                tvMazeRepository.searchShows(query)
+            }
+
+            // TVmaze results → TV shows
+            tvMazeDeferred.await().getOrNull()?.forEach { result ->
+                val show = result.show
+                combined.add(
+                    SearchDisplayItem(
+                        id = show.id,
+                        mediaType = "tv",
+                        source = "tvmaze",
+                        displayName = show.name,
+                        overview = tvMazeRepository.cleanSummary(show.summary),
+                        posterUrl = show.image?.medium,
+                        voteAverage = show.rating?.average ?: 0.0,
+                        year = show.premiered?.take(4),
+                        score = result.score
+                    )
+                )
+            }
         }
 
         // Sort: TV shows first (higher relevance from TVmaze)
-        val sorted = combined.sortedByDescending { it.score }
+        val sorted = if (useTvdb) combined else combined.sortedByDescending { it.score }
 
         _uiState.value = _uiState.value.copy(
             results = sorted,

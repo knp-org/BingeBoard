@@ -50,8 +50,14 @@ class WatchlistRepository @Inject constructor(
     suspend fun addToWatchlist(item: WatchlistDisplayItem) {
         context.watchlistDataStore.edit { prefs ->
             val current = parseEntries(prefs[WATCHLIST_KEY] ?: "[]").toMutableList()
-            // Remove existing if any, to update it
-            current.removeAll { it.mediaType == item.mediaType && it.mediaId == item.mediaId }
+            // Remove existing by matching tvmazeId or tvdbId (handles source switching)
+            current.removeAll { existing ->
+                existing.mediaType == item.mediaType && (
+                    existing.mediaId == item.mediaId ||
+                    (item.tvmazeId != null && existing.tvmazeId == item.tvmazeId) ||
+                    (item.tvdbId != null && existing.tvdbId == item.tvdbId)
+                )
+            }
             current.add(item)
             prefs[WATCHLIST_KEY] = serializeEntries(current)
         }
@@ -94,10 +100,15 @@ class WatchlistRepository @Inject constructor(
                 val airTimeDisplay = map["airTimeDisplay"] as? String
                 val airTimestamp = (map["airTimestamp"] as? Number)?.toLong()
 
+                val tvmazeId = (map["tvmazeId"] as? Double)?.toInt()
+                val tvdbId = (map["tvdbId"] as? Double)?.toInt()
+
                 WatchlistDisplayItem(
                     mediaType = type,
                     mediaId = id,
                     source = source,
+                    tvmazeId = tvmazeId ?: if (source == "tvmaze") id else null,
+                    tvdbId = tvdbId,
                     name = name,
                     posterUrl = posterUrl,
                     backdropPath = backdropPath,
@@ -131,6 +142,8 @@ class WatchlistRepository @Inject constructor(
             item.nextEpisodeLabel?.let { map["nextEpisodeLabel"] = it }
             item.airTimeDisplay?.let { map["airTimeDisplay"] = it }
             item.airTimestamp?.let { map["airTimestamp"] = it }
+            item.tvmazeId?.let { map["tvmazeId"] = it }
+            item.tvdbId?.let { map["tvdbId"] = it }
             map
         }
         return adapter.toJson(list)

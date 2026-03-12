@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
@@ -49,8 +50,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import org.knp.bingeboard.data.model.WatchlistDisplayItem
 import org.knp.bingeboard.ui.components.AppHeader
@@ -78,12 +78,12 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = LocalThemeIsDark.current
 
-    val pullToRefreshState = rememberPullToRefreshState()
+    var isRefreshing by remember { mutableStateOf(false) }
 
-    if (pullToRefreshState.isRefreshing) {
+    if (isRefreshing) {
         LaunchedEffect(true) {
             viewModel.syncWatchlist()
-            pullToRefreshState.endRefresh()
+            isRefreshing = false
         }
     }
 
@@ -145,7 +145,11 @@ fun HomeScreen(
                     }
                 }
                 else -> {
-                    Box(modifier = Modifier.fillMaxSize().nestedScroll(pullToRefreshState.nestedScrollConnection)) {
+                    PullToRefreshBox(
+                        isRefreshing = isRefreshing,
+                        onRefresh = { isRefreshing = true },
+                        modifier = Modifier.fillMaxSize()
+                    ) {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -165,18 +169,6 @@ fun HomeScreen(
                                 )
                             }
                         }
-                        
-                        PullToRefreshContainer(
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .graphicsLayer {
-                                    scaleX = if (pullToRefreshState.isRefreshing || pullToRefreshState.progress > 0f) 1f else 0f
-                                    scaleY = scaleX
-                                },
-                            state = pullToRefreshState,
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = Primary,
-                        )
                     }
                 }
             }

@@ -24,17 +24,17 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,9 +63,9 @@ fun TvScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = LocalThemeIsDark.current
 
-    val pullToRefreshState = rememberPullToRefreshState()
+    var isRefreshing by remember { mutableStateOf(false) }
 
-    if (pullToRefreshState.isRefreshing) {
+    if (isRefreshing) {
         LaunchedEffect(true) {
             viewModel.loadSchedule()
         }
@@ -73,7 +73,7 @@ fun TvScreen(
 
     LaunchedEffect(uiState.isLoading) {
         if (!uiState.isLoading) {
-            pullToRefreshState.endRefresh()
+            isRefreshing = false
         }
     }
 
@@ -96,7 +96,11 @@ fun TvScreen(
             AppHeader(title = "Today's Schedule", onSearchClick = onSearchClick)
             Spacer(modifier = Modifier.height(8.dp))
 
-            Box(modifier = Modifier.fillMaxSize().nestedScroll(pullToRefreshState.nestedScrollConnection)) {
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { isRefreshing = true },
+                modifier = Modifier.fillMaxSize()
+            ) {
                 when {
                     uiState.isLoading && uiState.episodes.isEmpty() -> {
                         Box(
@@ -152,18 +156,6 @@ fun TvScreen(
                         }
                     }
                 }
-                
-                PullToRefreshContainer(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .graphicsLayer {
-                            scaleX = if (pullToRefreshState.isRefreshing || pullToRefreshState.progress > 0f) 1f else 0f
-                            scaleY = scaleX
-                        },
-                    state = pullToRefreshState,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = Primary,
-                )
             }
         }
     }

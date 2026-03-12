@@ -11,6 +11,8 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.knp.bingeboard.data.api.TvMazeApiService
+import org.knp.bingeboard.data.api.TvdbApiService
+import org.knp.bingeboard.data.api.TvdbAuthInterceptor
 import org.knp.bingeboard.data.repository.LocaleOptionsProvider
 import org.knp.bingeboard.data.repository.UserPreferencesRepository
 import org.knp.bingeboard.data.repository.WatchlistRepository
@@ -74,6 +76,45 @@ object AppModule {
     @Singleton
     fun provideTvMazeApiService(@Named("tvmaze") retrofit: Retrofit): TvMazeApiService {
         return retrofit.create(TvMazeApiService::class.java)
+    }
+
+    // ── TVDB ─────────────────────────────────────────────────
+
+    @Provides
+    @Singleton
+    @Named("tvdb")
+    fun provideTvdbOkHttpClient(
+        authInterceptor: TvdbAuthInterceptor
+    ): OkHttpClient {
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+        return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @Named("tvdb")
+    fun provideTvdbRetrofit(
+        @Named("tvdb") okHttpClient: OkHttpClient,
+        moshi: Moshi
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://api4.thetvdb.com/v4/")
+            .client(okHttpClient)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTvdbApiService(@Named("tvdb") retrofit: Retrofit): TvdbApiService {
+        return retrofit.create(TvdbApiService::class.java)
     }
 
     // ── Other ────────────────────────────────────────────────

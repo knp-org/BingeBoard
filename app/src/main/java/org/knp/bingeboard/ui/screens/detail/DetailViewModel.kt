@@ -8,25 +8,26 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import org.knp.bingeboard.data.model.TvMazeShow
+import org.knp.bingeboard.data.mapper.toShowDetails
+import org.knp.bingeboard.data.mapper.toWatchlistDisplayItem
+import org.knp.bingeboard.data.model.ShowDetails
+import org.knp.bingeboard.data.repository.TvdbRepository
 import org.knp.bingeboard.data.repository.TvMazeRepository
 import org.knp.bingeboard.data.repository.WatchlistRepository
 import javax.inject.Inject
 
 data class DetailUiState(
-    val tvMazeShow: TvMazeShow? = null,
+    val show: ShowDetails? = null,
     val isLoading: Boolean = true,
     val error: String? = null,
-    val isInWatchlist: Boolean = false,
-    val airTimeDisplay: String? = null,
-    val source: String = "tvmaze"
+    val isInWatchlist: Boolean = false
 )
 
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val tvMazeRepository: TvMazeRepository,
+    private val tvdbRepository: TvdbRepository,
     private val watchlistRepository: WatchlistRepository
 ) : ViewModel() {
 
@@ -43,30 +44,52 @@ class DetailViewModel @Inject constructor(
 
     private fun loadDetails() {
         viewModelScope.launch {
-            _uiState.value = DetailUiState(isLoading = true, source = source)
+            _uiState.value = DetailUiState(isLoading = true)
             val inWatchlist = watchlistRepository.isInWatchlist(mediaType, mediaId)
 
-            if (mediaType == "tv" && source == "tvmaze") {
-                val result = tvMazeRepository.getShowDetails(mediaId)
-                val mazeShow = result.getOrNull()
-                val airTimeDisplay = mazeShow?.let { tvMazeRepository.getAirTimeInfo(it)?.displayLabel }
+            if (mediaType == "tv") {
+                val showDetails = when (source) {
+                    "tvdb" -> loadFromTvdb()
+                    else -> loadFromTvMaze()
+                }
 
                 _uiState.value = DetailUiState(
-                    tvMazeShow = mazeShow,
+                    show = showDetails,
                     isLoading = false,
-                    error = result.exceptionOrNull()?.message,
-                    isInWatchlist = inWatchlist,
-                    airTimeDisplay = airTimeDisplay,
-                    source = source
+                    error = if (showDetails == null) "Failed to load details" else null,
+                    isInWatchlist = inWatchlist
                 )
             } else {
                 _uiState.value = DetailUiState(
                     isLoading = false,
-                    error = "Unsupported media type or source",
-                    source = source
+                    error = "Unsupported media type"
                 )
             }
         }
+    }
+
+    private suspend fun loadFromTvMaze(): ShowDetails? {
+        val result = tvMazeRepository.getShowDetails(mediaId)
+        val mazeShow = result.getOrNull() ?: return null
+        val airTimeInfo = tvMazeRepository.getAirTimeInfo(mazeShow)
+        return mazeShow.toShowDetails(
+            airSchedule = airTimeInfo?.displayLabel,
+            airTimestamp = airTimeInfo?.userDateTime?.toInstant()?.toEpochMilli()
+        )
+    }
+
+    private suspend fun loadFromTvdb(): ShowDetails? {
+        val seriesResult = tvdbRepository.getSeries(mediaId)
+        val episodesResult = tvdbRepository.getSeriesEpisodes(mediaId)
+
+        val series = seriesResult.getOrNull()?.data ?: return null
+        val episodes = episodesResult.getOrNull()?.data?.episodes
+        val nextEp = tvdbRepository.findLatestOrNextEpisode(episodes)
+
+        return series.toShowDetails(
+            nextEpisode = nextEp,
+            airTimestamp = tvdbRepository.parseAirDate(nextEp?.aired, series.airsTime, series.originalCountry)
+        )
     }
 
     fun toggleWatchlist() {
@@ -75,29 +98,8 @@ class DetailViewModel @Inject constructor(
             if (currentlyInList) {
                 watchlistRepository.removeFromWatchlist(mediaType, mediaId)
             } else {
-                val state = _uiState.value
-                state.tvMazeShow?.let { show ->
-                    val today = LocalDate.now().toString()
-                    val prevEp = show.embedded?.previousepisode
-                    val nextEp = show.embedded?.nextepisode
-                    val displayEp = if (prevEp?.airdate == today) prevEp else nextEp
-                    val displayItem = org.knp.bingeboard.data.model.WatchlistDisplayItem(
-                        mediaType = "tv",
-                        mediaId = show.id,
-                        source = "tvmaze",
-                        name = show.name,
-                        posterUrl = show.image?.medium,
-                        backdropPath = null,
-                        voteAverage = show.rating?.average ?: 0.0,
-                        status = show.status,
-                        sortDate = displayEp?.airdate ?: show.schedule?.time?.takeIf { it.isNotBlank() },
-                        nextEpisodeLabel = displayEp?.let { ep ->
-                            "S${ep.season}E${ep.number}" + (" — ${ep.name}")
-                        },
-                        genres = show.genres.joinToString(", "),
-                        airTimeDisplay = state.airTimeDisplay
-                    )
-                    watchlistRepository.addToWatchlist(displayItem)
+                _uiState.value.show?.let { show ->
+                    watchlistRepository.addToWatchlist(show.toWatchlistDisplayItem())
                 }
             }
             _uiState.value = _uiState.value.copy(isInWatchlist = !currentlyInList)

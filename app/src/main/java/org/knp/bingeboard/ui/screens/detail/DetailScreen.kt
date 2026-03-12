@@ -28,7 +28,6 @@ import androidx.compose.material.icons.filled.BookmarkAdded
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Tv
-import androidx.compose.material.icons.outlined.Movie
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -52,7 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import org.knp.bingeboard.data.model.TvMazeShow
+import org.knp.bingeboard.data.model.ShowDetails
 import org.knp.bingeboard.ui.components.glassPill
 import org.knp.bingeboard.ui.components.glassSurface
 import org.knp.bingeboard.ui.theme.GradientPurple
@@ -107,123 +106,25 @@ fun DetailScreen(
                     )
                 }
             }
-            uiState.tvMazeShow != null -> {
-                uiState.tvMazeShow?.let { safeShow ->
-                    TvMazeShowDetailContent(
-                        show = safeShow,
-                        isInWatchlist = uiState.isInWatchlist,
-                        airTimeDisplay = uiState.airTimeDisplay,
-                        onBackClick = onBackClick,
-                        onToggleWatchlist = { viewModel.toggleWatchlist() }
-                    )
-                }
+            uiState.show != null -> {
+                ShowDetailContent(
+                    show = uiState.show!!,
+                    isInWatchlist = uiState.isInWatchlist,
+                    onBackClick = onBackClick,
+                    onToggleWatchlist = { viewModel.toggleWatchlist() }
+                )
             }
         }
     }
 }
 
-// ── Watchlist Button ────────────────────────────────────────────
-
-@Composable
-private fun WatchlistButton(
-    isInWatchlist: Boolean,
-    onClick: () -> Unit
-) {
-    val bgColor by animateColorAsState(
-        targetValue = if (isInWatchlist) Color(0xFF22C55E) else Primary,
-        label = "watchlistBg"
-    )
-
-    Button(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(containerColor = bgColor),
-        shape = RoundedCornerShape(14.dp)
-    ) {
-        Icon(
-            imageVector = if (isInWatchlist) Icons.Filled.BookmarkAdded else Icons.Filled.BookmarkAdd,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = if (isInWatchlist) "Added to List" else "Add to List",
-            fontWeight = FontWeight.SemiBold
-        )
-    }
-}
-
-// ── Shared Components ───────────────────────────────────────────
-
-@Composable
-private fun InfoChip(icon: ImageVector, text: String) {
-    Row(
-        modifier = Modifier
-            .glassSurface(shape = RoundedCornerShape(20.dp), elevation = 2.dp)
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Primary,
-            modifier = Modifier.size(14.dp)
-        )
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-@Composable
-private fun GenreChip(name: String) {
-    Text(
-        text = name,
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.Medium,
-        color = GradientPurple,
-        modifier = Modifier
-            .background(
-                GradientPurple.copy(alpha = 0.1f),
-                RoundedCornerShape(20.dp)
-            )
-            .padding(horizontal = 12.dp, vertical = 6.dp)
-    )
-}
-
-@Composable
-private fun SectionCard(
-    title: String,
-    content: @Composable () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .glassSurface(elevation = 4.dp)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        content()
-    }
-}
-
-// ── TVmaze Show Detail ──────────────────────────────────────────
+// ── Unified Show Detail Content ─────────────────────────────────
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TvMazeShowDetailContent(
-    show: TvMazeShow,
+private fun ShowDetailContent(
+    show: ShowDetails,
     isInWatchlist: Boolean,
-    airTimeDisplay: String? = null,
     onBackClick: () -> Unit,
     onToggleWatchlist: () -> Unit
 ) {
@@ -241,7 +142,7 @@ private fun TvMazeShowDetailContent(
                 .aspectRatio(16f / 9f)
         ) {
             AsyncImage(
-                model = show.image?.original ?: show.image?.medium,
+                model = show.posterUrl,
                 contentDescription = show.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -314,7 +215,7 @@ private fun TvMazeShowDetailContent(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    show.rating?.average?.let { rating ->
+                    show.rating?.let { rating ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -344,7 +245,7 @@ private fun TvMazeShowDetailContent(
                         Text(
                             text = "• $status",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = if (status == "Running") Color(0xFF22C55E)
+                            color = if (status == "Running" || status == "Continuing") Color(0xFF22C55E)
                             else Color.White.copy(alpha = 0.7f)
                         )
                     }
@@ -383,19 +284,16 @@ private fun TvMazeShowDetailContent(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                show.network?.name?.let { network ->
+                show.network?.let { network ->
                     InfoChip(icon = Icons.Filled.Tv, text = network)
                 }
-                show.webChannel?.name?.let { channel ->
-                    InfoChip(icon = Icons.Filled.Tv, text = channel)
-                }
-                show.averageRuntime?.let { runtime ->
+                show.runtime?.let { runtime ->
                     InfoChip(icon = Icons.Outlined.Schedule, text = "${runtime}m")
                 }
             }
 
             // Airing Schedule
-            airTimeDisplay?.let { schedule ->
+            show.airSchedule?.let { schedule ->
                 SectionCard(title = "Airing Schedule") {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -417,14 +315,30 @@ private fun TvMazeShowDetailContent(
                 }
             }
 
+            // Next Episode
+            show.nextEpisode?.let { ep ->
+                SectionCard(title = "Next Episode") {
+                    Text(
+                        text = "S${ep.season}E${ep.number}" + (ep.name?.let { " — $it" } ?: ""),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = GradientPurple
+                    )
+                    ep.airDate?.let { date ->
+                        Text(
+                            text = date,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
             // Overview
-            val cleanSummary = show.summary
-                ?.replace(Regex("<[^>]*>"), "")
-                ?.trim()
-            if (!cleanSummary.isNullOrBlank()) {
+            if (!show.summary.isNullOrBlank()) {
                 SectionCard(title = "Overview") {
                     Text(
-                        text = cleanSummary,
+                        text = show.summary,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         lineHeight = 22.sp
@@ -432,7 +346,7 @@ private fun TvMazeShowDetailContent(
                 }
             }
 
-            // Dates
+            // Details
             SectionCard(title = "Details") {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     show.premiered?.let { date ->
@@ -472,5 +386,52 @@ private fun TvMazeShowDetailContent(
 
             Spacer(modifier = Modifier.height(80.dp))
         }
+    }
+}
+
+// ── Shared Components ───────────────────────────────────────────
+
+@Composable
+private fun InfoChip(icon: ImageVector, text: String) {
+    Row(
+        modifier = Modifier
+            .glassSurface(shape = RoundedCornerShape(20.dp), elevation = 2.dp)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = Primary,
+            modifier = Modifier.size(14.dp)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun SectionCard(
+    title: String,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .glassSurface(elevation = 4.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        content()
     }
 }

@@ -1,4 +1,5 @@
 plugins {
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.kapt)
@@ -7,12 +8,12 @@ plugins {
 
 android {
     namespace = "org.knp.bingeboard"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "org.knp.bingeboard"
-        minSdk = 26
-        targetSdk = 34
+        minSdk = 33
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
 
@@ -43,10 +44,6 @@ android {
 
     buildFeatures {
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
 
     packaging {
