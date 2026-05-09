@@ -20,4 +20,14 @@ data class WatchlistDisplayItem(
     val genres: String,            // comma-separated genre names
     val airTimeDisplay: String? = null, // e.g. "Sundays at 9:30 PM IST"
     val airTimestamp: Long? = null // to calculate countdown
-)
+) {
+    val isAiring: Boolean
+        get() = status?.trim()?.lowercase()?.let { s ->
+            s == "running" || s == "continuing" || s == "in production" || s == "returning series"
+        } ?: false
+
+    val isCompleted: Boolean
+        get() = status?.trim()?.lowercase()?.let { s ->
+            s == "ended" || s == "canceled" || s == "cancelled"
+        } ?: false
+}

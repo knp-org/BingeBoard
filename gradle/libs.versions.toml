@@ -24,6 +24,7 @@ composeCompiler = "1.5.10"
 # Dependency Injection (Hilt)
 hilt = "2.53.1"
 hiltNavigationCompose = "1.2.0"
+hiltWork = "1.2.0"
 room = "2.6.1"
 
 # Networking
@@ -127,6 +128,8 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", v
 
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWork" }
+androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltWork" }
 
 # Networking
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }

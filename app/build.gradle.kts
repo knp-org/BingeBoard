@@ -76,6 +76,11 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.hilt.work)
+    kapt(libs.androidx.hilt.compiler)
+
+    // WorkManager
+    implementation(libs.work.runtime.ktx)
 
     // Networking
     implementation(libs.retrofit)

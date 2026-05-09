@@ -34,6 +34,7 @@ class UserPreferencesRepository @Inject constructor(
         val TIMEZONE = stringPreferencesKey("timezone")
         val TVDB_API_KEY = stringPreferencesKey("tvdb_api_key")
         val USE_TVDB = androidx.datastore.preferences.core.booleanPreferencesKey("use_tvdb")
+        val NOTIFICATIONS_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("notifications_enabled")
     }
 
     val themeMode: Flow<ThemeMode> = context.dataStore.data
@@ -121,6 +122,20 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun updateUseTvdb(useTvdb: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.USE_TVDB] = useTvdb
+        }
+    }
+
+    val notificationsEnabled: Flow<Boolean> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] ?: true
+        }
+
+    suspend fun updateNotificationsEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] = enabled
         }
     }
 }

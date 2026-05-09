@@ -12,13 +12,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.knp.bingeboard.notifications.NotificationsToggleViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -98,29 +104,35 @@ fun AppHeader(
                         )
                     }
 
-                    // Notification button
+                    // Notification toggle (bell)
+                    val toggleViewModel: NotificationsToggleViewModel = hiltViewModel()
+                    val notificationsEnabled by toggleViewModel.enabled.collectAsStateWithLifecycle()
                     Box {
                         IconButton(
-                            onClick = { /* TODO: Notifications */ },
+                            onClick = { toggleViewModel.toggle() },
                             modifier = Modifier
                                 .size(44.dp)
                                 .glassPill(shape = CircleShape, elevation = 4.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Outlined.Notifications,
-                                contentDescription = "Notifications",
-                                tint = MaterialTheme.colorScheme.onSurface
+                                imageVector = when {
+                                    notificationsEnabled -> Icons.Filled.Notifications
+                                    else -> Icons.Outlined.NotificationsOff
+                                },
+                                contentDescription = if (notificationsEnabled) "Disable notifications" else "Enable notifications",
+                                tint = if (notificationsEnabled) Primary else MaterialTheme.colorScheme.onSurface
                             )
                         }
-                        // Blue notification dot
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .offset(x = (-4).dp, y = 4.dp)
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(Primary)
-                        )
+                        if (notificationsEnabled) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = (-4).dp, y = 4.dp)
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(Primary)
+                            )
+                        }
                     }
                 }
             }

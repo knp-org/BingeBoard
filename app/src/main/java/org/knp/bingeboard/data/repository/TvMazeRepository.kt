@@ -1,7 +1,6 @@
 package org.knp.bingeboard.data.repository
 
 import org.knp.bingeboard.data.api.TvMazeApiService
-import org.knp.bingeboard.data.model.TvMazeEpisode
 import org.knp.bingeboard.data.model.TvMazeSearchResult
 import org.knp.bingeboard.data.model.TvMazeShow
 import java.time.LocalTime
@@ -39,15 +38,6 @@ class TvMazeRepository @Inject constructor(
     suspend fun getShowDetails(id: Int): Result<TvMazeShow> {
         return try {
             Result.success(apiService.getShowDetails(id))
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    /** Get TV schedule for a specific date and country */
-    suspend fun getWebSchedule(date: String, countryCode: String?): Result<List<TvMazeEpisode>> {
-        return try {
-            Result.success(apiService.getWebSchedule(date, countryCode))
         } catch (e: Exception) {
             Result.failure(e)
         }

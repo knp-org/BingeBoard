@@ -41,10 +41,6 @@ data class TvMazeEmbedded(
     @Json(name = "previousepisode") val previousepisode: TvMazeEpisode? = null
 )
 
-data class TvMazeEpisodeEmbedded(
-    @Json(name = "show") val show: TvMazeShow? = null
-)
-
 data class TvMazeEpisode(
     @Json(name = "id") val id: Int,
     @Json(name = "name") val name: String,
@@ -52,8 +48,7 @@ data class TvMazeEpisode(
     @Json(name = "number") val number: Int,
     @Json(name = "airdate") val airdate: String? = null,
     @Json(name = "airtime") val airtime: String? = null,
-    @Json(name = "airstamp") val airstamp: String? = null,
-    @Json(name = "_embedded") val embedded: TvMazeEpisodeEmbedded? = null
+    @Json(name = "airstamp") val airstamp: String? = null
 )
 
 data class TvMazeSchedule(

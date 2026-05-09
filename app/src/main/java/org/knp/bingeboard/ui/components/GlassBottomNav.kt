@@ -43,7 +43,7 @@ data class BottomNavItem(
 
 val bottomNavItems = listOf(
     BottomNavItem("Home", Icons.Filled.Home, Icons.Outlined.Home),
-    BottomNavItem("TV", Icons.Filled.Tv, Icons.Outlined.Tv),
+    BottomNavItem("Watchlist", Icons.Filled.Tv, Icons.Outlined.Tv),
     BottomNavItem("Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
 )
 

@@ -1,4 +1,4 @@
-package org.knp.bingeboard.ui.screens.tv
+package org.knp.bingeboard.ui.screens.watchlist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,20 +17,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.filled.Tv
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,40 +38,23 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import org.knp.bingeboard.data.model.TvMazeEpisode
+import org.knp.bingeboard.data.model.WatchlistDisplayItem
 import org.knp.bingeboard.ui.components.AppHeader
 import org.knp.bingeboard.ui.components.glassSurface
-import org.knp.bingeboard.ui.screens.home.CountdownTimer
 import org.knp.bingeboard.ui.theme.GradientPurple
 import org.knp.bingeboard.ui.theme.LiquidGradientBrush
 import org.knp.bingeboard.ui.theme.LocalThemeIsDark
 import org.knp.bingeboard.ui.theme.Primary
 import org.knp.bingeboard.ui.theme.StarYellow
-import java.time.ZonedDateTime
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TvScreen(
-    viewModel: TvViewModel = hiltViewModel(),
+fun WatchlistScreen(
+    viewModel: WatchlistViewModel = hiltViewModel(),
     onShowClick: (Int, String) -> Unit = { _, _ -> },
     onSearchClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = LocalThemeIsDark.current
-
-    var isRefreshing by remember { mutableStateOf(false) }
-
-    if (isRefreshing) {
-        LaunchedEffect(true) {
-            viewModel.loadSchedule()
-        }
-    }
-
-    LaunchedEffect(uiState.isLoading) {
-        if (!uiState.isLoading) {
-            isRefreshing = false
-        }
-    }
 
     val backgroundModifier = if (isDark) {
         Modifier.background(LiquidGradientBrush)
@@ -93,66 +72,62 @@ fun TvScreen(
                 .fillMaxSize()
                 .statusBarsPadding()
         ) {
-            AppHeader(title = "Today's Schedule", onSearchClick = onSearchClick)
+            AppHeader(title = "Watchlist", onSearchClick = onSearchClick)
             Spacer(modifier = Modifier.height(8.dp))
 
-            PullToRefreshBox(
-                isRefreshing = isRefreshing,
-                onRefresh = { isRefreshing = true },
-                modifier = Modifier.fillMaxSize()
-            ) {
-                when {
-                    uiState.isLoading && uiState.episodes.isEmpty() -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Primary)
+                    }
+                }
+                uiState.items.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            CircularProgressIndicator(color = Primary)
-                        }
-                    }
-                    uiState.error != null && uiState.episodes.isEmpty() -> {
-                        // Empty/Error state - must be scrollable to pull to refresh
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            item {
-                                Box(
-                                    modifier = Modifier.fillParentMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        Text(
-                                            text = uiState.error ?: "No schedule available",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                start = 16.dp, end = 16.dp, top = 4.dp, bottom = 100.dp
+                            Icon(
+                                imageVector = Icons.Outlined.CheckCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(72.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                             )
-                        ) {
-                            items(
-                                items = uiState.episodes,
-                                key = { item -> "episode_${item.id}" }
-                            ) { episode ->
-                                ScheduleCard(
-                                    episode = episode,
-                                    onClick = {
-                                        episode.embedded?.show?.id?.let { showId ->
-                                            onShowClick(showId, "tvmaze")
-                                        }
-                                    }
-                                )
-                            }
+                            Text(
+                                text = "No completed shows yet",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "Ended shows from your list will appear here",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                            start = 16.dp, end = 16.dp, top = 4.dp, bottom = 100.dp
+                        )
+                    ) {
+                        items(
+                            items = uiState.items,
+                            key = { item -> "${item.source}_${item.mediaType}_${item.mediaId}" }
+                        ) { item ->
+                            CompletedShowCard(
+                                item = item,
+                                onClick = { onShowClick(item.mediaId, item.source) }
+                            )
                         }
                     }
                 }
@@ -162,12 +137,10 @@ fun TvScreen(
 }
 
 @Composable
-private fun ScheduleCard(
-    episode: TvMazeEpisode,
+private fun CompletedShowCard(
+    item: WatchlistDisplayItem,
     onClick: () -> Unit
 ) {
-    val show = episode.embedded?.show ?: return
-    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -179,10 +152,9 @@ private fun ScheduleCard(
             .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // Poster (Use show image)
         AsyncImage(
-            model = show.image?.medium,
-            contentDescription = show.name,
+            model = item.posterUrl,
+            contentDescription = item.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(width = 80.dp, height = 115.dp)
@@ -190,80 +162,93 @@ private fun ScheduleCard(
                 .background(Color(0xFF1A2133))
         )
 
-        // Info column
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // Title
             Text(
-                text = show.name,
+                text = item.name,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            // Rating
-            if (show.rating?.average != null) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(3.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = null,
-                        tint = StarYellow,
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Text(
-                        text = String.format("%.1f", show.rating.average),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-
-            // Episode Info
-            Text(
-                text = "S${episode.season} E${episode.number}: ${episode.name}",
-                style = MaterialTheme.typography.bodySmall,
-                color = GradientPurple,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
 
-            // Air time or Countdown
-            if (!episode.airstamp.isNullOrBlank()) {
-                val airTimestamp = try {
-                    ZonedDateTime.parse(episode.airstamp).toInstant().toEpochMilli()
-                } catch (e: Exception) {
-                    null
-                }
-
-                if (airTimestamp != null) {
-                    Row(
-                        modifier = Modifier.padding(top = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        CountdownTimer(targetTimestamp = airTimestamp)
-                    }
-                } else if (episode.airtime?.isNotBlank() == true) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = Modifier
+                        .background(
+                            Primary.copy(alpha = 0.1f),
+                            RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
+                    Icon(
+                        imageVector = if (item.mediaType == "tv") Icons.Filled.Tv else Icons.Filled.Movie,
+                        contentDescription = null,
+                        tint = Primary,
+                        modifier = Modifier.size(12.dp)
+                    )
                     Text(
-                        text = episode.airtime,
+                        text = if (item.mediaType == "tv") "TV" else "Movie",
                         style = MaterialTheme.typography.labelSmall,
                         color = Primary,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
-            } else if (episode.airtime?.isNotBlank() == true) {
-                 Text(
-                     text = episode.airtime,
-                     style = MaterialTheme.typography.labelSmall,
-                     color = Primary,
-                     fontWeight = FontWeight.Medium
-                 )
+
+                if (item.voteAverage > 0) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = null,
+                            tint = StarYellow,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Text(
+                            text = String.format("%.1f", item.voteAverage),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+
+            if (item.genres.isNotEmpty()) {
+                Text(
+                    text = item.genres,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = GradientPurple,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.CheckCircle,
+                    contentDescription = null,
+                    tint = Color(0xFF22C55E),
+                    modifier = Modifier.size(13.dp)
+                )
+                Text(
+                    text = item.status ?: "Ended",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFF22C55E),
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }

@@ -20,11 +20,11 @@ import org.knp.bingeboard.ui.screens.detail.DetailScreen
 import org.knp.bingeboard.ui.screens.home.HomeScreen
 import org.knp.bingeboard.ui.screens.search.SearchScreen
 import org.knp.bingeboard.ui.screens.settings.SettingsScreen
-import org.knp.bingeboard.ui.screens.tv.TvScreen
+import org.knp.bingeboard.ui.screens.watchlist.WatchlistScreen
 
 object Destinations {
     const val HOME = "home"
-    const val TV = "tv"
+    const val WATCHLIST = "watchlist"
     const val SETTINGS = "settings"
     const val SEARCH = "search"
     const val DETAIL = "detail/{mediaType}/{mediaId}?source={source}"
@@ -42,7 +42,7 @@ fun BingeBoardNavGraph() {
     val currentEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentEntry?.destination?.route
     val showBottomNav = currentRoute in listOf(
-        Destinations.HOME, Destinations.TV, Destinations.SETTINGS
+        Destinations.HOME, Destinations.WATCHLIST, Destinations.SETTINGS
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -63,8 +63,8 @@ fun BingeBoardNavGraph() {
             composable(Destinations.SETTINGS) {
                 SettingsScreen()
             }
-            composable(Destinations.TV) {
-                TvScreen(
+            composable(Destinations.WATCHLIST) {
+                WatchlistScreen(
                     onShowClick = { id, source ->
                         navController.navigate(Destinations.detailRoute("tv", id, source))
                     },
@@ -109,7 +109,7 @@ fun BingeBoardNavGraph() {
                     selectedNavIndex = index
                     val route = when (index) {
                         0 -> Destinations.HOME
-                        1 -> Destinations.TV
+                        1 -> Destinations.WATCHLIST
                         2 -> Destinations.SETTINGS
                         else -> Destinations.HOME
                     }

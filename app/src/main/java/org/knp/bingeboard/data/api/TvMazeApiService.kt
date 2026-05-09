@@ -1,6 +1,5 @@
 package org.knp.bingeboard.data.api
 
-import org.knp.bingeboard.data.model.TvMazeEpisode
 import org.knp.bingeboard.data.model.TvMazeSearchResult
 import org.knp.bingeboard.data.model.TvMazeShow
 import retrofit2.http.GET
@@ -39,11 +38,4 @@ interface TvMazeApiService {
     suspend fun singleSearch(
         @Query("q") query: String
     ): TvMazeShow?
-
-    /** Get TV schedule for a specific date and country */
-    @GET("schedule/web")
-    suspend fun getWebSchedule(
-        @Query("date") date: String,
-        @Query("country") countryCode: String? = null
-    ): List<TvMazeEpisode>
 }

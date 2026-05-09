@@ -1,0 +1,26 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Antennas (V shape) -->
+    <path
+        android:pathData="M 6,4 L 12,10 L 18,4"
+        android:strokeWidth="1.6"
+        android:strokeColor="@android:color/white"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Antenna tips -->
+    <path
+        android:pathData="M 6,3 A 1,1 0 1,0 6,5 A 1,1 0 1,0 6,3 Z M 18,3 A 1,1 0 1,0 18,5 A 1,1 0 1,0 18,3 Z"
+        android:fillColor="@android:color/white" />
+
+    <!-- TV body with play triangle punched out (evenOdd) -->
+    <path
+        android:pathData="M 4,9 H 20 C 21.105,9 22,9.895 22,11 V 19 C 22,20.105 21.105,21 20,21 H 4 C 2.895,21 2,20.105 2,19 V 11 C 2,9.895 2.895,9 4,9 Z M 10,12 L 16,15 L 10,18 Z"
+        android:fillColor="@android:color/white"
+        android:fillType="evenOdd" />
+
+</vector>
