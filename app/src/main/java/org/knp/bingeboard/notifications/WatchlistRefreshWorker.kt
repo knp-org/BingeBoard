@@ -21,9 +21,8 @@ class WatchlistRefreshWorker @AssistedInject constructor(
             WatchlistRefreshScheduler.scheduleNext(applicationContext)
             Result.success()
         } catch (_: Exception) {
-            // Ensure we still keep the daily cadence even if a single run fails.
             WatchlistRefreshScheduler.scheduleNext(applicationContext)
-            Result.retry()
+            Result.failure()
         }
     }
 }

@@ -43,12 +43,22 @@ data class ShowDetails(
     val officialSite: String?,
     val nextEpisode: EpisodeInfo?,
     val airSchedule: String?,          // e.g. "Sundays at 9:30 PM IST"
-    val airTimestamp: Long?             // epoch millis for countdown timer
+    val airTimestamp: Long?,            // epoch millis for countdown timer
+    val englishName: String? = null,
+    val cast: List<CastMember> = emptyList()
 )
 
 /**
  * Minimal episode info for the next/latest episode display.
  */
+data class CastMember(
+    val personId: Int,
+    val name: String,
+    val character: String?,
+    val imageUrl: String?,
+    val source: Source
+)
+
 data class EpisodeInfo(
     val season: Int,
     val number: Int,

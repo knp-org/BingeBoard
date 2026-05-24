@@ -62,10 +62,13 @@ class WatchlistSyncer @Inject constructor(
         val series = seriesResult.getOrNull()?.data ?: return entry
         val episodes = episodesResult.getOrNull()?.data?.episodes
         val nextEp = tvdbRepository.findLatestOrNextEpisode(episodes)
+        val engName = series.translations?.nameTranslations
+            ?.find { it.language == "eng" }?.name
         val showDetails = series.toShowDetails(
             nextEpisode = nextEp,
             airTimestamp = tvdbRepository.parseAirDate(nextEp?.aired, series.airsTime, series.originalCountry),
-            tvmazeId = entry.tvmazeId
+            tvmazeId = entry.tvmazeId,
+            englishName = engName
         )
         return showDetails.toWatchlistDisplayItem()
     }

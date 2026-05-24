@@ -3,8 +3,10 @@ package org.knp.bingeboard.data.api
 import org.knp.bingeboard.data.model.TvdbEpisodesResponse
 import org.knp.bingeboard.data.model.TvdbLoginRequest
 import org.knp.bingeboard.data.model.TvdbLoginResponse
+import org.knp.bingeboard.data.model.TvdbPeopleResponse
 import org.knp.bingeboard.data.model.TvdbSearchResponse
 import org.knp.bingeboard.data.model.TvdbSeriesResponse
+import org.knp.bingeboard.data.model.TvdbTranslationResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -34,4 +36,15 @@ interface TvdbApiService {
         @Path("id") id: Int,
         @Query("page") page: Int = 0
     ): TvdbEpisodesResponse
+
+    @GET("people/{id}/extended")
+    suspend fun getPerson(
+        @Path("id") id: Int
+    ): TvdbPeopleResponse
+
+    @GET("series/{id}/translations/{language}")
+    suspend fun getSeriesTranslation(
+        @Path("id") id: Int,
+        @Path("language") language: String
+    ): TvdbTranslationResponse
 }

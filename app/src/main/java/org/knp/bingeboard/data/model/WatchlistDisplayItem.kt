@@ -19,7 +19,8 @@ data class WatchlistDisplayItem(
     val nextEpisodeLabel: String?, // e.g. "S2E5 — Episode Name"
     val genres: String,            // comma-separated genre names
     val airTimeDisplay: String? = null, // e.g. "Sundays at 9:30 PM IST"
-    val airTimestamp: Long? = null // to calculate countdown
+    val airTimestamp: Long? = null, // to calculate countdown
+    val englishName: String? = null
 ) {
     val isAiring: Boolean
         get() = status?.trim()?.lowercase()?.let { s ->

@@ -1,9 +1,12 @@
 package org.knp.bingeboard.data.mapper
 
+import org.knp.bingeboard.data.model.CastMember
 import org.knp.bingeboard.data.model.EpisodeInfo
 import org.knp.bingeboard.data.model.ShowDetails
 import org.knp.bingeboard.data.model.Source
+import org.knp.bingeboard.data.model.TvMazeCastMember
 import org.knp.bingeboard.data.model.TvMazeShow
+import org.knp.bingeboard.data.model.TvdbCharacter
 import org.knp.bingeboard.data.model.TvdbEpisode
 import org.knp.bingeboard.data.model.TvdbSeries
 import org.knp.bingeboard.data.model.WatchlistDisplayItem
@@ -13,7 +16,8 @@ import java.time.LocalDate
 
 fun TvMazeShow.toShowDetails(
     airSchedule: String? = null,
-    airTimestamp: Long? = null
+    airTimestamp: Long? = null,
+    castMembers: List<TvMazeCastMember> = emptyList()
 ): ShowDetails {
     val today = LocalDate.now().toString()
     val prevEp = embedded?.previousepisode
@@ -46,16 +50,27 @@ fun TvMazeShow.toShowDetails(
             )
         },
         airSchedule = airSchedule,
-        airTimestamp = airTimestamp
+        airTimestamp = airTimestamp,
+        cast = castMembers.map { it.toCastMember() }
     )
 }
+
+fun TvMazeCastMember.toCastMember() = CastMember(
+    personId = person.id,
+    name = person.name,
+    character = character?.name,
+    imageUrl = person.image?.medium ?: person.image?.original,
+    source = Source.TVMAZE
+)
 
 // ── TVDB → ShowDetails ──────────────────────────────────────────
 
 fun TvdbSeries.toShowDetails(
     nextEpisode: TvdbEpisode? = null,
     airTimestamp: Long? = null,
-    tvmazeId: Int? = null               // pass existing TVmaze ID if known
+    tvmazeId: Int? = null,              // pass existing TVmaze ID if known
+    englishName: String? = null,
+    castCharacters: List<TvdbCharacter> = emptyList()
 ): ShowDetails {
     return ShowDetails(
         source = Source.TVDB,
@@ -83,9 +98,19 @@ fun TvdbSeries.toShowDetails(
             )
         },
         airSchedule = null,
-        airTimestamp = airTimestamp
+        airTimestamp = airTimestamp,
+        englishName = englishName,
+        cast = castCharacters.filter { it.personName != null }.map { it.toCastMember() }
     )
 }
+
+fun TvdbCharacter.toCastMember() = CastMember(
+    personId = peopleId ?: 0,
+    name = personName ?: "",
+    character = name,
+    imageUrl = image,
+    source = Source.TVDB
+)
 
 // ── ShowDetails → WatchlistDisplayItem ──────────────────────────
 
@@ -112,6 +137,7 @@ fun ShowDetails.toWatchlistDisplayItem(): WatchlistDisplayItem {
         },
         genres = genres.joinToString(", "),
         airTimeDisplay = airSchedule,
-        airTimestamp = airTimestamp
+        airTimestamp = airTimestamp,
+        englishName = englishName
     )
 }

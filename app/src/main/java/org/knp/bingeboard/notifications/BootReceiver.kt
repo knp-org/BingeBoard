@@ -24,6 +24,7 @@ class BootReceiver : BroadcastReceiver() {
         val pending = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                WatchlistRefreshScheduler.scheduleNext(context)
                 val items = watchlistRepository.watchlist.first()
                 scheduler.rescheduleAll(items)
             } finally {

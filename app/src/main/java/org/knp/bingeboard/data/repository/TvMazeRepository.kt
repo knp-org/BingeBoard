@@ -1,6 +1,9 @@
 package org.knp.bingeboard.data.repository
 
 import org.knp.bingeboard.data.api.TvMazeApiService
+import org.knp.bingeboard.data.model.TvMazeCastCredit
+import org.knp.bingeboard.data.model.TvMazeCastMember
+import org.knp.bingeboard.data.model.TvMazePersonDetail
 import org.knp.bingeboard.data.model.TvMazeSearchResult
 import org.knp.bingeboard.data.model.TvMazeShow
 import java.time.LocalTime
@@ -108,6 +111,30 @@ class TvMazeRepository @Inject constructor(
             )
         } catch (e: Exception) {
             null
+        }
+    }
+
+    suspend fun getShowCast(id: Int): Result<List<TvMazeCastMember>> {
+        return try {
+            Result.success(apiService.getShowCast(id))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getPersonDetails(id: Int): Result<TvMazePersonDetail> {
+        return try {
+            Result.success(apiService.getPersonDetails(id))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getPersonCastCredits(id: Int): Result<List<TvMazeCastCredit>> {
+        return try {
+            Result.success(apiService.getPersonCastCredits(id))
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 

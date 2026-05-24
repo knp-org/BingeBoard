@@ -72,9 +72,11 @@ class DetailViewModel @Inject constructor(
         val result = tvMazeRepository.getShowDetails(mediaId)
         val mazeShow = result.getOrNull() ?: return null
         val airTimeInfo = tvMazeRepository.getAirTimeInfo(mazeShow)
+        val cast = tvMazeRepository.getShowCast(mediaId).getOrNull() ?: emptyList()
         return mazeShow.toShowDetails(
             airSchedule = airTimeInfo?.displayLabel,
-            airTimestamp = airTimeInfo?.userDateTime?.toInstant()?.toEpochMilli()
+            airTimestamp = airTimeInfo?.userDateTime?.toInstant()?.toEpochMilli(),
+            castMembers = cast
         )
     }
 
@@ -85,10 +87,14 @@ class DetailViewModel @Inject constructor(
         val series = seriesResult.getOrNull()?.data ?: return null
         val episodes = episodesResult.getOrNull()?.data?.episodes
         val nextEp = tvdbRepository.findLatestOrNextEpisode(episodes)
+        val engName = series.translations?.nameTranslations
+            ?.find { it.language == "eng" }?.name
 
         return series.toShowDetails(
             nextEpisode = nextEp,
-            airTimestamp = tvdbRepository.parseAirDate(nextEp?.aired, series.airsTime, series.originalCountry)
+            airTimestamp = tvdbRepository.parseAirDate(nextEp?.aired, series.airsTime, series.originalCountry),
+            englishName = engName,
+            castCharacters = series.characters ?: emptyList()
         )
     }
 

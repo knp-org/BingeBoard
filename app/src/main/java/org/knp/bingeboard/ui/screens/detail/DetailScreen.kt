@@ -2,6 +2,7 @@ package org.knp.bingeboard.ui.screens.detail
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,11 +49,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import org.knp.bingeboard.data.model.CastMember
 import org.knp.bingeboard.data.model.ShowDetails
 import org.knp.bingeboard.ui.components.glassPill
 import org.knp.bingeboard.ui.components.glassSurface
@@ -63,6 +69,7 @@ import org.knp.bingeboard.ui.theme.StarYellow
 @Composable
 fun DetailScreen(
     onBackClick: () -> Unit,
+    onPersonClick: (Int, String) -> Unit = { _, _ -> },
     viewModel: DetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -111,7 +118,8 @@ fun DetailScreen(
                     show = uiState.show!!,
                     isInWatchlist = uiState.isInWatchlist,
                     onBackClick = onBackClick,
-                    onToggleWatchlist = { viewModel.toggleWatchlist() }
+                    onToggleWatchlist = { viewModel.toggleWatchlist() },
+                    onPersonClick = onPersonClick
                 )
             }
         }
@@ -126,7 +134,8 @@ private fun ShowDetailContent(
     show: ShowDetails,
     isInWatchlist: Boolean,
     onBackClick: () -> Unit,
-    onToggleWatchlist: () -> Unit
+    onToggleWatchlist: () -> Unit,
+    onPersonClick: (Int, String) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -334,6 +343,11 @@ private fun ShowDetailContent(
                 }
             }
 
+            // Cast
+            if (show.cast.isNotEmpty()) {
+                CastSection(cast = show.cast, onPersonClick = onPersonClick)
+            }
+
             // Overview
             if (!show.summary.isNullOrBlank()) {
                 SectionCard(title = "Overview") {
@@ -411,6 +425,79 @@ private fun InfoChip(icon: ImageVector, text: String) {
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurface
         )
+    }
+}
+
+@Composable
+private fun CastSection(cast: List<CastMember>, onPersonClick: (Int, String) -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Cast",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(cast) { member ->
+                CastCard(
+                    member = member,
+                    onClick = { onPersonClick(member.personId, member.source.name.lowercase()) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CastCard(member: CastMember, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .width(80.dp)
+            .glassSurface(elevation = 2.dp)
+            .clickable(onClick = onClick)
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        AsyncImage(
+            model = member.imageUrl,
+            contentDescription = member.name,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(64.dp)
+                .clip(CircleShape)
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Column(
+            modifier = Modifier.height(48.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Text(
+                text = member.name,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
+            member.character?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 10.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }
 

@@ -3,6 +3,7 @@ package org.knp.bingeboard.data.repository
 import kotlinx.coroutines.flow.first
 import org.knp.bingeboard.data.api.TvdbApiService
 import org.knp.bingeboard.data.model.TvdbEpisodesResponse
+import org.knp.bingeboard.data.model.TvdbPeopleResponse
 import org.knp.bingeboard.data.model.TvdbSearchResponse
 import org.knp.bingeboard.data.model.TvdbSeries
 import org.knp.bingeboard.data.model.TvdbSeriesResponse
@@ -20,7 +21,7 @@ class TvdbRepository @Inject constructor(
     /**
      * Converts user language code (e.g. "en-US") to TVDB 3-letter code (e.g. "eng").
      */
-    private fun toTvdbLanguageCode(userLang: String): String {
+    fun toTvdbLanguageCode(userLang: String): String {
         val iso2 = userLang.split("-").first().lowercase()
         return LANGUAGE_MAP[iso2] ?: "eng"
     }
@@ -54,6 +55,26 @@ class TvdbRepository @Inject constructor(
             Result.success(TvdbSeriesResponse(data = translated))
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    suspend fun getPerson(id: Int): Result<TvdbPeopleResponse> {
+        return try {
+            Result.success(apiService.getPerson(id))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Fetches the translated name for a series in a given language.
+     */
+    suspend fun getSeriesTranslatedName(seriesId: Int, language: String): String? {
+        return try {
+            val response = apiService.getSeriesTranslation(seriesId, language)
+            response.data?.name
+        } catch (e: Exception) {
+            null
         }
     }
 

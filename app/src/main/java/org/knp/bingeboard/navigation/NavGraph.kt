@@ -18,6 +18,7 @@ import androidx.navigation.navArgument
 import org.knp.bingeboard.ui.components.GlassBottomNav
 import org.knp.bingeboard.ui.screens.detail.DetailScreen
 import org.knp.bingeboard.ui.screens.home.HomeScreen
+import org.knp.bingeboard.ui.screens.person.PersonScreen
 import org.knp.bingeboard.ui.screens.search.SearchScreen
 import org.knp.bingeboard.ui.screens.settings.SettingsScreen
 import org.knp.bingeboard.ui.screens.watchlist.WatchlistScreen
@@ -28,9 +29,13 @@ object Destinations {
     const val SETTINGS = "settings"
     const val SEARCH = "search"
     const val DETAIL = "detail/{mediaType}/{mediaId}?source={source}"
+    const val PERSON = "person/{personId}?source={source}"
 
     fun detailRoute(mediaType: String, mediaId: Int, source: String = "tvmaze"): String =
         "detail/$mediaType/$mediaId?source=$source"
+
+    fun personRoute(personId: Int, source: String = "tvmaze"): String =
+        "person/$personId?source=$source"
 }
 
 @Composable
@@ -97,7 +102,29 @@ fun BingeBoardNavGraph() {
                 )
             ) {
                 DetailScreen(
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
+                    onPersonClick = { personId, source ->
+                        navController.navigate(Destinations.personRoute(personId, source))
+                    }
+                )
+            }
+
+            // Person screen
+            composable(
+                route = Destinations.PERSON,
+                arguments = listOf(
+                    navArgument("personId") { type = NavType.IntType },
+                    navArgument("source") {
+                        type = NavType.StringType
+                        defaultValue = "tvmaze"
+                    }
+                )
+            ) {
+                PersonScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onShowClick = { showId, source ->
+                        navController.navigate(Destinations.detailRoute("tv", showId, source))
+                    }
                 )
             }
         }

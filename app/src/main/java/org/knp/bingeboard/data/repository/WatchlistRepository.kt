@@ -102,6 +102,7 @@ class WatchlistRepository @Inject constructor(
 
                 val tvmazeId = (map["tvmazeId"] as? Double)?.toInt()
                 val tvdbId = (map["tvdbId"] as? Double)?.toInt()
+                val englishName = map["englishName"] as? String
 
                 WatchlistDisplayItem(
                     mediaType = type,
@@ -118,7 +119,8 @@ class WatchlistRepository @Inject constructor(
                     nextEpisodeLabel = nextEpisodeLabel,
                     genres = genres,
                     airTimeDisplay = airTimeDisplay,
-                    airTimestamp = airTimestamp
+                    airTimestamp = airTimestamp,
+                    englishName = englishName
                 )
             }
         } catch (e: Exception) {
@@ -144,6 +146,7 @@ class WatchlistRepository @Inject constructor(
             item.airTimestamp?.let { map["airTimestamp"] = it }
             item.tvmazeId?.let { map["tvmazeId"] = it }
             item.tvdbId?.let { map["tvdbId"] = it }
+            item.englishName?.let { map["englishName"] = it }
             map
         }
         return adapter.toJson(list)

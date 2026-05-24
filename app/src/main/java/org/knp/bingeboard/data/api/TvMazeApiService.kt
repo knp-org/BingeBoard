@@ -1,5 +1,8 @@
 package org.knp.bingeboard.data.api
 
+import org.knp.bingeboard.data.model.TvMazeCastCredit
+import org.knp.bingeboard.data.model.TvMazeCastMember
+import org.knp.bingeboard.data.model.TvMazePersonDetail
 import org.knp.bingeboard.data.model.TvMazeSearchResult
 import org.knp.bingeboard.data.model.TvMazeShow
 import retrofit2.http.GET
@@ -38,4 +41,23 @@ interface TvMazeApiService {
     suspend fun singleSearch(
         @Query("q") query: String
     ): TvMazeShow?
+
+    /** Get cast for a show */
+    @GET("shows/{id}/cast")
+    suspend fun getShowCast(
+        @Path("id") id: Int
+    ): List<TvMazeCastMember>
+
+    /** Get person details */
+    @GET("people/{id}")
+    suspend fun getPersonDetails(
+        @Path("id") id: Int
+    ): TvMazePersonDetail
+
+    /** Get person's cast credits with show info embedded */
+    @GET("people/{id}/castcredits")
+    suspend fun getPersonCastCredits(
+        @Path("id") id: Int,
+        @Query("embed") embed: String = "show"
+    ): List<TvMazeCastCredit>
 }

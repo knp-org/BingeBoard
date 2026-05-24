@@ -51,7 +51,7 @@ class AirNotificationScheduler @Inject constructor(
     private fun pendingIntent(item: WatchlistDisplayItem): PendingIntent {
         val intent = Intent(context, ShowAirReceiver::class.java).apply {
             putExtra(ShowAirReceiver.EXTRA_MEDIA_ID, item.mediaId)
-            putExtra(ShowAirReceiver.EXTRA_SHOW_NAME, item.name)
+            putExtra(ShowAirReceiver.EXTRA_SHOW_NAME, item.englishName ?: item.name)
             putExtra(ShowAirReceiver.EXTRA_EPISODE_LABEL, item.nextEpisodeLabel)
             putExtra(ShowAirReceiver.EXTRA_SOURCE, item.source)
             putExtra(ShowAirReceiver.EXTRA_POSTER_URL, item.posterUrl)

@@ -83,3 +83,43 @@ data class TvMazeImage(
     @Json(name = "medium") val medium: String? = null,
     @Json(name = "original") val original: String? = null
 )
+
+// ── Cast ───────────────────────────────────────────────────────
+
+data class TvMazeCastMember(
+    @Json(name = "person") val person: TvMazePerson,
+    @Json(name = "character") val character: TvMazeCharacter? = null
+)
+
+data class TvMazePerson(
+    @Json(name = "id") val id: Int,
+    @Json(name = "name") val name: String,
+    @Json(name = "image") val image: TvMazeImage? = null
+)
+
+data class TvMazeCharacter(
+    @Json(name = "id") val id: Int = 0,
+    @Json(name = "name") val name: String? = null,
+    @Json(name = "image") val image: TvMazeImage? = null
+)
+
+// ── Person Details ─────────────────────────────────────────────
+
+data class TvMazePersonDetail(
+    @Json(name = "id") val id: Int,
+    @Json(name = "name") val name: String,
+    @Json(name = "birthday") val birthday: String? = null,
+    @Json(name = "deathday") val deathday: String? = null,
+    @Json(name = "gender") val gender: String? = null,
+    @Json(name = "country") val country: TvMazeCountry? = null,
+    @Json(name = "image") val image: TvMazeImage? = null
+)
+
+data class TvMazeCastCredit(
+    @Json(name = "_embedded") val embedded: TvMazeCastCreditEmbed? = null
+)
+
+data class TvMazeCastCreditEmbed(
+    @Json(name = "show") val show: TvMazeShow? = null,
+    @Json(name = "character") val character: TvMazeCharacter? = null
+)

@@ -48,7 +48,8 @@ data class TvdbSeries(
     @Json(name = "nextAired") val nextAired: String? = null,
     @Json(name = "airsTime") val airsTime: String? = null,
     @Json(name = "originalCountry") val originalCountry: String? = null,
-    @Json(name = "translations") val translations: TvdbSeriesTranslations? = null
+    @Json(name = "translations") val translations: TvdbSeriesTranslations? = null,
+    @Json(name = "characters") val characters: List<TvdbCharacter>? = null
 )
 
 data class TvdbSeriesTranslations(
@@ -72,6 +73,50 @@ data class TvdbGenre(
     @Json(name = "name") val name: String? = null
 )
 
+// ── Characters ─────────────────────────────────────────────────
+
+data class TvdbCharacter(
+    @Json(name = "id") val id: Int = 0,
+    @Json(name = "name") val name: String? = null,
+    @Json(name = "personName") val personName: String? = null,
+    @Json(name = "image") val image: String? = null,
+    @Json(name = "type") val type: Int? = null,
+    @Json(name = "peopleId") val peopleId: Int? = null
+)
+
+// ── People ─────────────────────────────────────────────────────
+
+data class TvdbPeopleResponse(
+    @Json(name = "data") val data: TvdbPerson? = null
+)
+
+data class TvdbPerson(
+    @Json(name = "id") val id: Int,
+    @Json(name = "name") val name: String? = null,
+    @Json(name = "image") val image: String? = null,
+    @Json(name = "birth") val birth: String? = null,
+    @Json(name = "death") val death: String? = null,
+    @Json(name = "gender") val gender: Int? = null,
+    @Json(name = "birthPlace") val birthPlace: String? = null,
+    @Json(name = "characters") val characters: List<TvdbPersonCharacter>? = null
+)
+
+data class TvdbPersonCharacter(
+    @Json(name = "id") val id: Int = 0,
+    @Json(name = "name") val name: String? = null,
+    @Json(name = "seriesId") val seriesId: Int? = null,
+    @Json(name = "series") val series: TvdbCharacterSeries? = null,
+    @Json(name = "image") val image: String? = null,
+    @Json(name = "type") val type: Int? = null
+)
+
+data class TvdbCharacterSeries(
+    @Json(name = "name") val name: String? = null,
+    @Json(name = "image") val image: String? = null,
+    @Json(name = "nameTranslations") val nameTranslations: List<String>? = null,
+    @Json(name = "firstAired") val firstAired: String? = null
+)
+
 // ── Episodes ────────────────────────────────────────────────────
 data class TvdbEpisodesResponse(
     @Json(name = "data") val data: TvdbEpisodesData? = null
@@ -91,4 +136,13 @@ data class TvdbEpisode(
     @Json(name = "image") val image: String? = null
 )
 
+// ── Series Translation ──────────────────────────────────────────
+data class TvdbTranslationResponse(
+    @Json(name = "data") val data: TvdbTranslationData? = null
+)
 
+data class TvdbTranslationData(
+    @Json(name = "name") val name: String? = null,
+    @Json(name = "overview") val overview: String? = null,
+    @Json(name = "language") val language: String? = null
+)
