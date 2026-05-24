@@ -7,10 +7,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import android.app.Application
 import org.knp.bingeboard.data.model.WatchlistDisplayItem
 import org.knp.bingeboard.data.repository.WatchlistRepository
 import org.knp.bingeboard.data.repository.WatchlistSyncer
 import org.knp.bingeboard.notifications.AirNotificationScheduler
+import org.knp.bingeboard.notifications.WatchlistRefreshScheduler
 import javax.inject.Inject
 
 data class HomeUiState(
@@ -22,6 +24,7 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val application: Application,
     private val watchlistRepository: WatchlistRepository,
     private val watchlistSyncer: WatchlistSyncer,
     private val airNotificationScheduler: AirNotificationScheduler
@@ -43,12 +46,10 @@ class HomeViewModel @Inject constructor(
                 )
 
                 airNotificationScheduler.rescheduleAll(entries)
-
-                if (filtered.any { it.name == "Loading..." }) {
-                    refreshWatchlist()
-                }
             }
         }
+        WatchlistRefreshScheduler.scheduleNext(application)
+        refreshWatchlist()
     }
 
     fun loadWatchlist() {
