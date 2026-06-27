@@ -1,52 +1,51 @@
 package org.knp.bingeboard.notifications
 
 import android.content.Context
+import android.util.Log
 import androidx.work.Constraints
-import androidx.work.ExistingWorkPolicy
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 
 /**
- * Schedules the watchlist refresh worker to run once a day around 6 AM local time.
+ * Schedules the watchlist refresh worker to run periodically.
  *
- * WorkManager periodic work doesn't support exact-time triggers — instead we enqueue
- * a one-time request with an initial delay until the next 6 AM, and the worker
- * re-enqueues itself for the following day at the end of each run.
+ * Uses PeriodicWorkRequest (every 6 hours) instead of chained one-time requests.
+ * This is far more reliable on Samsung/OEM devices with aggressive battery
+ * management, because WorkManager treats periodic work as a persistent job
+ * that survives Doze, app standby, and OEM battery killers.
+ *
+ * The KEEP policy ensures re-calling schedule() (e.g. on every app launch)
+ * is idempotent — it won't cancel or reset the existing schedule.
  */
 object WatchlistRefreshScheduler {
 
-    private const val WORK_NAME = "watchlist_daily_refresh"
-    private val TARGET_TIME: LocalTime = LocalTime.of(6, 0)
+    private const val TAG = "WatchlistRefreshScheduler"
+    private const val WORK_NAME = "watchlist_periodic_refresh"
 
-    fun scheduleNext(context: Context) {
-        val delayMinutes = minutesUntilNext(TARGET_TIME)
+    fun schedule(context: Context) {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
-            .setRequiresBatteryNotLow(true)
+            // Removed setRequiresBatteryNotLow — Samsung reports "battery low"
+            // even at high charge, which prevents the worker from running.
             .build()
 
-        val request = OneTimeWorkRequestBuilder<WatchlistRefreshWorker>()
-            .setInitialDelay(delayMinutes, TimeUnit.MINUTES)
+        val request = PeriodicWorkRequestBuilder<WatchlistRefreshWorker>(
+            6, TimeUnit.HOURS,           // repeat interval
+            30, TimeUnit.MINUTES         // flex interval — run within the last 30m of each period
+        )
             .setConstraints(constraints)
             .build()
 
         WorkManager.getInstance(context)
-            .enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.REPLACE, request)
-    }
+            .enqueueUniquePeriodicWork(
+                WORK_NAME,
+                ExistingPeriodicWorkPolicy.KEEP,  // Don't reset if already scheduled
+                request
+            )
 
-    private fun minutesUntilNext(target: LocalTime): Long {
-        val now = LocalDateTime.now()
-        var next = LocalDateTime.of(LocalDate.now(), target)
-        if (!next.isAfter(now)) next = next.plusDays(1)
-        val zone = ZoneId.systemDefault()
-        val diffMillis = next.atZone(zone).toInstant().toEpochMilli() -
-            now.atZone(zone).toInstant().toEpochMilli()
-        return TimeUnit.MILLISECONDS.toMinutes(diffMillis).coerceAtLeast(1)
+        Log.d(TAG, "Periodic watchlist refresh scheduled (every 6 hours)")
     }
 }

@@ -48,7 +48,7 @@ class HomeViewModel @Inject constructor(
                 airNotificationScheduler.rescheduleAll(entries)
             }
         }
-        WatchlistRefreshScheduler.scheduleNext(application)
+        WatchlistRefreshScheduler.schedule(application)
         refreshWatchlist()
     }
 

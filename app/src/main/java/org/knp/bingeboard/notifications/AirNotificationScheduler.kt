@@ -37,8 +37,8 @@ class AirNotificationScheduler @Inject constructor(
     private fun schedule(item: WatchlistDisplayItem, triggerAtMillis: Long) {
         val am = alarmManager ?: return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
-            // Fall back to inexact — better late than never.
-            am.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent(item))
+            // Fall back to inexact but Doze-aware — better late than never.
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent(item))
             return
         }
         am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent(item))

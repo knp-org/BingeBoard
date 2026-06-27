@@ -41,11 +41,9 @@ import coil.compose.AsyncImage
 import org.knp.bingeboard.data.model.WatchlistDisplayItem
 import org.knp.bingeboard.ui.components.AppHeader
 import org.knp.bingeboard.ui.components.glassSurface
-import org.knp.bingeboard.ui.theme.GradientPurple
-import org.knp.bingeboard.ui.theme.LiquidGradientBrush
+import org.knp.bingeboard.ui.theme.DarkBackground
 import org.knp.bingeboard.ui.theme.LocalThemeIsDark
-import org.knp.bingeboard.ui.theme.Primary
-import org.knp.bingeboard.ui.theme.StarYellow
+import org.knp.bingeboard.ui.theme.StatusActive
 
 @Composable
 fun WatchlistScreen(
@@ -56,16 +54,10 @@ fun WatchlistScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = LocalThemeIsDark.current
 
-    val backgroundModifier = if (isDark) {
-        Modifier.background(LiquidGradientBrush)
-    } else {
-        Modifier.background(MaterialTheme.colorScheme.background)
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .then(backgroundModifier)
+            .background(if (isDark) DarkBackground else MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -81,7 +73,10 @@ fun WatchlistScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = Primary)
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 2.dp
+                        )
                     }
                 }
                 uiState.items.isEmpty() -> {
@@ -117,7 +112,7 @@ fun WatchlistScreen(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                            start = 16.dp, end = 16.dp, top = 4.dp, bottom = 100.dp
+                            start = 24.dp, end = 24.dp, top = 4.dp, bottom = 100.dp
                         )
                     ) {
                         items(
@@ -145,7 +140,7 @@ private fun CompletedShowCard(
         modifier = Modifier
             .fillMaxWidth()
             .glassSurface(
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(12.dp),
                 elevation = 4.dp
             )
             .clickable { onClick() }
@@ -158,8 +153,8 @@ private fun CompletedShowCard(
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(width = 80.dp, height = 115.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF1A2133))
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFF0A0A0A))
         )
 
         Column(
@@ -179,10 +174,11 @@ private fun CompletedShowCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Media type badge — frosted glass
                 Row(
                     modifier = Modifier
                         .background(
-                            Primary.copy(alpha = 0.1f),
+                            Color.White.copy(alpha = 0.08f),
                             RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 6.dp, vertical = 2.dp),
@@ -192,13 +188,13 @@ private fun CompletedShowCard(
                     Icon(
                         imageVector = if (item.mediaType == "tv") Icons.Filled.Tv else Icons.Filled.Movie,
                         contentDescription = null,
-                        tint = Primary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(12.dp)
                     )
                     Text(
                         text = if (item.mediaType == "tv") "TV" else "Movie",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Primary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -211,7 +207,7 @@ private fun CompletedShowCard(
                         Icon(
                             imageVector = Icons.Filled.Star,
                             contentDescription = null,
-                            tint = StarYellow,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(13.dp)
                         )
                         Text(
@@ -227,7 +223,7 @@ private fun CompletedShowCard(
                 Text(
                     text = item.genres,
                     style = MaterialTheme.typography.bodySmall,
-                    color = GradientPurple,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -240,13 +236,13 @@ private fun CompletedShowCard(
                 Icon(
                     imageVector = Icons.Outlined.CheckCircle,
                     contentDescription = null,
-                    tint = Color(0xFF22C55E),
+                    tint = StatusActive,
                     modifier = Modifier.size(13.dp)
                 )
                 Text(
                     text = item.status ?: "Ended",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFF22C55E),
+                    color = StatusActive,
                     fontWeight = FontWeight.Medium
                 )
             }

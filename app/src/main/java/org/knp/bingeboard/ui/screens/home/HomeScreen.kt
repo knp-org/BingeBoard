@@ -26,9 +26,11 @@ import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,17 +50,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import org.knp.bingeboard.data.model.WatchlistDisplayItem
 import org.knp.bingeboard.ui.components.AppHeader
 import org.knp.bingeboard.ui.components.glassSurface
-import org.knp.bingeboard.ui.theme.GradientPurple
-import org.knp.bingeboard.ui.theme.LiquidGradientBrush
+import org.knp.bingeboard.ui.theme.DarkBackground
 import org.knp.bingeboard.ui.theme.LocalThemeIsDark
-import org.knp.bingeboard.ui.theme.Primary
-import org.knp.bingeboard.ui.theme.StarYellow
+import org.knp.bingeboard.ui.theme.StatusActive
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -87,16 +83,10 @@ fun HomeScreen(
         }
     }
 
-    val backgroundModifier = if (isDark) {
-        Modifier.background(LiquidGradientBrush)
-    } else {
-        Modifier.background(MaterialTheme.colorScheme.background)
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .then(backgroundModifier)
+            .background(if (isDark) DarkBackground else MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -112,7 +102,10 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = Primary)
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 2.dp
+                        )
                     }
                 }
                 uiState.watchlistItems.isEmpty() -> {
@@ -154,7 +147,7 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                start = 16.dp, end = 16.dp, top = 4.dp, bottom = 100.dp
+                                start = 24.dp, end = 24.dp, top = 4.dp, bottom = 100.dp
                             )
                         ) {
                             items(
@@ -187,7 +180,7 @@ private fun WatchlistCard(
         modifier = Modifier
             .fillMaxWidth()
             .glassSurface(
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(12.dp),
                 elevation = 4.dp
             )
             .clickable { onClick() }
@@ -201,8 +194,8 @@ private fun WatchlistCard(
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(width = 80.dp, height = 115.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF1A2133))
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFF0A0A0A))
         )
 
         // Info column
@@ -225,11 +218,11 @@ private fun WatchlistCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Media type badge
+                // Media type badge — frosted glass capsule
                 Row(
                     modifier = Modifier
                         .background(
-                            Primary.copy(alpha = 0.1f),
+                            Color.White.copy(alpha = 0.08f),
                             RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 6.dp, vertical = 2.dp),
@@ -239,18 +232,18 @@ private fun WatchlistCard(
                     Icon(
                         imageVector = if (item.mediaType == "tv") Icons.Filled.Tv else Icons.Filled.Movie,
                         contentDescription = null,
-                        tint = Primary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(12.dp)
                     )
                     Text(
                         text = if (item.mediaType == "tv") "TV" else "Movie",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Primary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
 
-                // Rating
+                // Rating — white star
                 if (item.voteAverage > 0) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -259,7 +252,7 @@ private fun WatchlistCard(
                         Icon(
                             imageVector = Icons.Filled.Star,
                             contentDescription = null,
-                            tint = StarYellow,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(13.dp)
                         )
                         Text(
@@ -276,7 +269,7 @@ private fun WatchlistCard(
                 Text(
                     text = item.genres,
                     style = MaterialTheme.typography.bodySmall,
-                    color = GradientPurple,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -304,13 +297,13 @@ private fun WatchlistCard(
                     Icon(
                         imageVector = Icons.Filled.CalendarMonth,
                         contentDescription = null,
-                        tint = Primary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(13.dp)
                     )
                     Text(
                         text = if (relativeLabel != null) "$dateStr ($relativeLabel)" else dateStr,
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (relativeLabel == "Today") Color(0xFF22C55E)
+                        color = if (relativeLabel == "Today") StatusActive
                         else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -326,7 +319,7 @@ private fun WatchlistCard(
                     Icon(
                         imageVector = Icons.Outlined.Schedule,
                         contentDescription = null,
-                        tint = Color(0xFF22C55E),
+                        tint = StatusActive,
                         modifier = Modifier.size(13.dp)
                     )
                     CountdownTimer(targetTimestamp = item.airTimestamp)
@@ -339,13 +332,13 @@ private fun WatchlistCard(
                     Icon(
                         imageVector = Icons.Outlined.Schedule,
                         contentDescription = null,
-                        tint = GradientPurple,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(13.dp)
                     )
                     Text(
                         text = item.airTimeDisplay,
                         style = MaterialTheme.typography.labelSmall,
-                        color = GradientPurple,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -386,7 +379,7 @@ fun CountdownTimer(targetTimestamp: Long) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelSmall,
-        color = if (diff > 0) Color(0xFF22C55E) else MaterialTheme.colorScheme.onSurfaceVariant,
+        color = if (diff > 0) StatusActive else MaterialTheme.colorScheme.onSurfaceVariant,
         fontWeight = FontWeight.Medium,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis

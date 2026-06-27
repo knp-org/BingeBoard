@@ -19,12 +19,12 @@ import org.knp.bingeboard.ui.theme.GlassLightBorder
 import org.knp.bingeboard.ui.theme.LocalThemeIsDark
 
 /**
- * Glass panel modifier — semi-transparent surface with border and shadow.
- * Mimics the CSS `.glass-panel` effect from the design.
+ * Glass panel modifier — semi-transparent surface with hairline border and shadow.
+ * Liquid Glass: translucent frosted surface with low-opacity white border.
  */
 @Composable
 fun Modifier.glassSurface(
-    shape: Shape = RoundedCornerShape(16.dp),
+    shape: Shape = RoundedCornerShape(12.dp),
     elevation: Dp = 8.dp
 ): Modifier {
     val isDark = LocalThemeIsDark.current
@@ -42,12 +42,12 @@ fun Modifier.glassSurface(
         )
         .clip(shape)
         .background(bgColor, shape)
-        .border(width = 1.dp, color = borderColor, shape = shape)
+        .border(width = 0.5.dp, color = borderColor, shape = shape)
 }
 
 /**
  * Glass pill modifier — gradient glass surface for the bottom nav and buttons.
- * Mimics the CSS `.glass-pill` effect from the design.
+ * Liquid Glass: frosted capsule shape with white translucency.
  */
 @Composable
 fun Modifier.glassPill(
@@ -55,15 +55,15 @@ fun Modifier.glassPill(
     elevation: Dp = 8.dp
 ): Modifier {
     val isDark = LocalThemeIsDark.current
-    val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.06f)
+    val borderColor = if (isDark) Color.White.copy(alpha = 0.1f) else Color.Black.copy(alpha = 0.06f)
     val shadowColor = if (isDark) Color.Black.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.08f)
     val gradientBrush = if (isDark) {
         Brush.linearGradient(
-            colors = listOf(Color.White.copy(alpha = 0.1f), Color.White.copy(alpha = 0f))
+            colors = listOf(Color.White.copy(alpha = 0.08f), Color.White.copy(alpha = 0.02f))
         )
     } else {
         Brush.linearGradient(
-            colors = listOf(Color.White.copy(alpha = 0.85f), Color.White.copy(alpha = 0.6f))
+            colors = listOf(Color.White.copy(alpha = 0.95f), Color.White.copy(alpha = 0.7f))
         )
     }
 
@@ -77,5 +77,5 @@ fun Modifier.glassPill(
         )
         .clip(shape)
         .background(gradientBrush, shape)
-        .border(width = 1.dp, color = borderColor, shape = shape)
+        .border(width = 0.5.dp, color = borderColor, shape = shape)
 }

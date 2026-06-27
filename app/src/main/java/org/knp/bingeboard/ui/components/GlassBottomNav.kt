@@ -30,10 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import org.knp.bingeboard.ui.theme.LocalThemeIsDark
-import org.knp.bingeboard.ui.theme.Primary
 
 data class BottomNavItem(
     val label: String,
@@ -48,8 +48,8 @@ val bottomNavItems = listOf(
 )
 
 /**
- * Floating glass bottom navigation bar.
- * Matches the CSS `.glass-pill` design with a glow effect on the selected item.
+ * Floating glass bottom navigation dock.
+ * Liquid Glass: monochromatic, white active state, translucent glass pill.
  */
 @Composable
 fun GlassBottomNav(
@@ -61,7 +61,7 @@ fun GlassBottomNav(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 24.dp, vertical = 12.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -84,9 +84,10 @@ fun GlassBottomNav(
 
             bottomNavItems.forEachIndexed { index, item ->
                 val isSelected = index == selectedIndex
-                
-                val selectedColor = if (isDark) Color.White else Primary
-                val unselectedColor = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+
+                // Monochromatic: selected = primary (white in dark, black in light), unselected = gray
+                val selectedColor = MaterialTheme.colorScheme.primary
+                val unselectedColor = if (isDark) Color(0xFF707070) else Color(0xFF999999)
 
                 val iconColor by animateColorAsState(
                     targetValue = if (isSelected) selectedColor else unselectedColor,
@@ -96,22 +97,22 @@ fun GlassBottomNav(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .weight(1f) // Distribute width evenly
+                        .weight(1f)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) { onItemSelected(index) }
-                        .padding(vertical = 14.dp) // Extend vertical touch target
+                        .padding(vertical = 14.dp)
                 ) {
-                    // Glow behind selected icon
+                    // Subtle white glow behind selected icon
                     if (isSelected) {
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(36.dp)
                                 .offset(y = (-2).dp)
-                                .blur(12.dp)
+                                .blur(14.dp)
                                 .background(
-                                    color = Primary.copy(alpha = 0.3f),
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                                     shape = CircleShape
                                 )
                         )
@@ -121,10 +122,10 @@ fun GlassBottomNav(
                         imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
                         contentDescription = item.label,
                         tint = iconColor,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(26.dp)
                     )
 
-                    // Active dot indicator
+                    // Active dot indicator — pure white
                     if (isSelected) {
                         Box(
                             modifier = Modifier
@@ -132,7 +133,7 @@ fun GlassBottomNav(
                                 .offset(y = 12.dp)
                                 .size(4.dp)
                                 .clip(CircleShape)
-                                .background(selectedColor)
+                                .background(MaterialTheme.colorScheme.primary)
                         )
                     }
                 }

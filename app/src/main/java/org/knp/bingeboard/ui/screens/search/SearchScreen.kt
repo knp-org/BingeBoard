@@ -29,9 +29,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,10 +51,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import org.knp.bingeboard.ui.components.glassPill
 import org.knp.bingeboard.ui.components.glassSurface
-import org.knp.bingeboard.ui.theme.LiquidGradientBrush
+import org.knp.bingeboard.ui.theme.DarkBackground
 import org.knp.bingeboard.ui.theme.LocalThemeIsDark
-import org.knp.bingeboard.ui.theme.Primary
-import org.knp.bingeboard.ui.theme.StarYellow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,12 +65,6 @@ fun SearchScreen(
     val isDark = LocalThemeIsDark.current
     val focusRequester = remember { FocusRequester() }
 
-    val backgroundModifier = if (isDark) {
-        Modifier.background(LiquidGradientBrush)
-    } else {
-        Modifier.background(MaterialTheme.colorScheme.background)
-    }
-
     // Auto-focus the search field on open
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -81,14 +73,14 @@ fun SearchScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .then(backgroundModifier)
+            .background(if (isDark) DarkBackground else MaterialTheme.colorScheme.background)
             .statusBarsPadding()
     ) {
         // ── Search bar ──────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
@@ -106,6 +98,7 @@ fun SearchScreen(
 
             Spacer(modifier = Modifier.width(8.dp))
 
+            // Liquid Glass text field: translucent glass surface, borderless, white cursor
             TextField(
                 value = uiState.query,
                 onValueChange = { viewModel.onQueryChange(it) },
@@ -134,7 +127,7 @@ fun SearchScreen(
                     unfocusedContainerColor = Color.Transparent,
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
-                    cursorColor = Primary
+                    cursorColor = MaterialTheme.colorScheme.primary
                 ),
                 singleLine = true
             )
@@ -149,7 +142,10 @@ fun SearchScreen(
                         .padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = Primary)
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 2.dp
+                    )
                 }
             }
             uiState.hasSearched && uiState.results.isEmpty() -> {
@@ -179,7 +175,7 @@ fun SearchScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                        start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp
+                        start = 24.dp, end = 24.dp, top = 8.dp, bottom = 100.dp
                     )
                 ) {
                     items(
@@ -230,7 +226,7 @@ private fun SearchResultCard(
         modifier = Modifier
             .fillMaxWidth()
             .glassSurface(
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(12.dp),
                 elevation = 4.dp
             )
             .clickable { onClick() }
@@ -238,15 +234,15 @@ private fun SearchResultCard(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Poster thumbnail — uses direct URL (works for both TVmaze and TMDB)
+        // Poster thumbnail
         AsyncImage(
             model = item.posterUrl,
             contentDescription = item.displayName,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(width = 60.dp, height = 85.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFF1A2133))
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFF0A0A0A))
         )
 
         // Info
@@ -269,11 +265,11 @@ private fun SearchResultCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Media type badge
+                // Media type badge — frosted glass
                 Row(
                     modifier = Modifier
                         .background(
-                            Primary.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
                             RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 6.dp, vertical = 2.dp),
@@ -283,13 +279,13 @@ private fun SearchResultCard(
                     Icon(
                         imageVector = if (item.mediaType == "tv") Icons.Filled.Tv else Icons.Filled.Movie,
                         contentDescription = null,
-                        tint = Primary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(12.dp)
                     )
                     Text(
                         text = if (item.mediaType == "tv") "TV" else "Movie",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Primary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -304,7 +300,7 @@ private fun SearchResultCard(
                 }
             }
 
-            // Rating
+            // Rating — white star
             if (item.voteAverage > 0) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -313,7 +309,7 @@ private fun SearchResultCard(
                     Icon(
                         imageVector = Icons.Filled.Star,
                         contentDescription = null,
-                        tint = StarYellow,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(13.dp)
                     )
                     Text(

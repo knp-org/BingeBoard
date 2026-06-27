@@ -32,8 +32,6 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,11 +58,10 @@ import org.knp.bingeboard.data.model.CastMember
 import org.knp.bingeboard.data.model.ShowDetails
 import org.knp.bingeboard.ui.components.glassPill
 import org.knp.bingeboard.ui.components.glassSurface
-import org.knp.bingeboard.ui.theme.GradientPurple
-import org.knp.bingeboard.ui.theme.LiquidGradientBrush
+import org.knp.bingeboard.ui.theme.DarkBackground
 import org.knp.bingeboard.ui.theme.LocalThemeIsDark
-import org.knp.bingeboard.ui.theme.Primary
-import org.knp.bingeboard.ui.theme.StarYellow
+import org.knp.bingeboard.ui.theme.StatusActive
+import androidx.compose.ui.platform.LocalUriHandler
 
 @Composable
 fun DetailScreen(
@@ -75,22 +72,17 @@ fun DetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = LocalThemeIsDark.current
 
-    val backgroundModifier = if (isDark) {
-        Modifier.background(LiquidGradientBrush)
-    } else {
-        Modifier.background(MaterialTheme.colorScheme.background)
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .then(backgroundModifier)
+            .background(if (isDark) DarkBackground else MaterialTheme.colorScheme.background)
     ) {
         when {
             uiState.isLoading -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = Primary
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 2.dp
                 )
             }
             uiState.error != null -> {
@@ -103,13 +95,13 @@ fun DetailScreen(
                     Text(
                         text = "Failed to load details",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = uiState.error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
                 }
             }
@@ -138,13 +130,15 @@ private fun ShowDetailContent(
     onPersonClick: (Int, String) -> Unit
 ) {
     val scrollState = rememberScrollState()
+    val uriHandler = LocalUriHandler.current
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
-        // ── Header with poster ────────────────────────────────
+        // ── Hero Header with backdrop ────────────────────────────
+        // DESIGN.md: Detail screens must feature a large hero image occupying top 40-50%
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -157,22 +151,22 @@ private fun ShowDetailContent(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Gradient overlay
+            // Gradient overlay — black from bottom for text legibility
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color.Black.copy(alpha = 0.5f),
+                                Color.Black.copy(alpha = 0.4f),
                                 Color.Transparent,
-                                Color.Black.copy(alpha = 0.8f)
+                                Color.Black.copy(alpha = 0.85f)
                             )
                         )
                     )
             )
 
-            // Back + Watchlist buttons
+            // Back + Watchlist buttons — frosted glass pills
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -202,12 +196,12 @@ private fun ShowDetailContent(
                         imageVector = if (isInWatchlist) Icons.Filled.BookmarkAdded
                         else Icons.Filled.BookmarkAdd,
                         contentDescription = if (isInWatchlist) "Remove from watchlist" else "Add to watchlist",
-                        tint = if (isInWatchlist) Primary else Color.White
+                        tint = Color.White
                     )
                 }
             }
 
-            // Title + rating at bottom
+            // Title + rating at bottom of hero
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -232,7 +226,7 @@ private fun ShowDetailContent(
                             Icon(
                                 imageVector = Icons.Filled.Star,
                                 contentDescription = null,
-                                tint = StarYellow,
+                                tint = Color.White,
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
@@ -254,7 +248,7 @@ private fun ShowDetailContent(
                         Text(
                             text = "• $status",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = if (status == "Running" || status == "Continuing") Color(0xFF22C55E)
+                            color = if (status == "Running" || status == "Continuing") StatusActive
                             else Color.White.copy(alpha = 0.7f)
                         )
                     }
@@ -262,12 +256,12 @@ private fun ShowDetailContent(
             }
         }
 
-        // ── Content below header ──────────────────────────────────
+        // ── Content below hero ──────────────────────────────────────
         Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Genres
+            // Genres — frosted glass chips
             if (show.genres.isNotEmpty()) {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -289,7 +283,7 @@ private fun ShowDetailContent(
                 }
             }
 
-            // Info chips
+            // Info chips — monochromatic
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -311,14 +305,14 @@ private fun ShowDetailContent(
                         Icon(
                             imageVector = Icons.Outlined.Schedule,
                             contentDescription = null,
-                            tint = GradientPurple,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                         Text(
                             text = schedule,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = GradientPurple
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -331,7 +325,7 @@ private fun ShowDetailContent(
                         text = "S${ep.season}E${ep.number}" + (ep.name?.let { " — $it" } ?: ""),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = GradientPurple
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     ep.airDate?.let { date ->
                         Text(
@@ -371,7 +365,7 @@ private fun ShowDetailContent(
                             Icon(
                                 imageVector = Icons.Filled.CalendarMonth,
                                 contentDescription = null,
-                                tint = Primary,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(14.dp)
                             )
                             Text(
@@ -393,6 +387,46 @@ private fun ShowDetailContent(
                             text = "Language: $lang",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    show.englishName?.let { engName ->
+                        if (engName.lowercase() != show.name.lowercase()) {
+                            Text(
+                                text = "English Name: $engName",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Text(
+                        text = "Data Source: ${show.source.name}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    show.tvmazeId?.let { id ->
+                        Text(
+                            text = "TVmaze ID: $id",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    show.tvdbId?.let { id ->
+                        Text(
+                            text = "TVDB ID: $id",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    show.officialSite?.let { site ->
+                        Text(
+                            text = "Official Site: $site",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable {
+                                try {
+                                    uriHandler.openUri(site)
+                                } catch (_: Exception) {}
+                            }
                         )
                     }
                 }
@@ -417,7 +451,7 @@ private fun InfoChip(icon: ImageVector, text: String) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Primary,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(14.dp)
         )
         Text(

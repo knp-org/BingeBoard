@@ -28,35 +28,30 @@ import org.knp.bingeboard.notifications.NotificationsToggleViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.knp.bingeboard.R
-import org.knp.bingeboard.ui.theme.GradientBlue
-import org.knp.bingeboard.ui.theme.GradientPurple
-import org.knp.bingeboard.ui.theme.Primary
+import org.knp.bingeboard.ui.theme.LocalThemeIsDark
 
 /**
- * Reusable app header with a gradient title and optional action icons.
- *
- * @param title The title text displayed in gradient style.
- * @param showActions When true, displays search and notification action icons.
+ * Reusable app header with a monochromatic title and optional action icons.
+ * Liquid Glass: crisp white title, glass pill icon buttons, no color gradients.
  */
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun AppHeader(
     title: String = "BingeBoard",
     showActions: Boolean = true,
     onSearchClick: () -> Unit = {}
 ) {
+    val isDark = LocalThemeIsDark.current
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 24.dp)
             .padding(top = 12.dp, bottom = 8.dp)
     ) {
         Row(
@@ -64,7 +59,7 @@ fun AppHeader(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // App Logo and Gradient title
+            // App Logo and title — monochromatic
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_launcher_foreground),
@@ -75,13 +70,12 @@ fun AppHeader(
                 )
                 Text(
                     text = title,
-                    style = TextStyle(
+                    style = MaterialTheme.typography.headlineLarge.copy(
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(GradientBlue, GradientPurple)
-                        )
-                    )
+                        letterSpacing = (-0.5).sp
+                    ),
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
@@ -120,7 +114,7 @@ fun AppHeader(
                                     else -> Icons.Outlined.NotificationsOff
                                 },
                                 contentDescription = if (notificationsEnabled) "Disable notifications" else "Enable notifications",
-                                tint = if (notificationsEnabled) Primary else MaterialTheme.colorScheme.onSurface
+                                tint = if (notificationsEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         if (notificationsEnabled) {
@@ -130,7 +124,7 @@ fun AppHeader(
                                     .offset(x = (-4).dp, y = 4.dp)
                                     .size(8.dp)
                                     .clip(CircleShape)
-                                    .background(Primary)
+                                    .background(MaterialTheme.colorScheme.primary)
                             )
                         }
                     }

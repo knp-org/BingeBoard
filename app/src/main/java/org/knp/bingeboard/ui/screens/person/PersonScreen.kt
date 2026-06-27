@@ -51,9 +51,8 @@ import org.knp.bingeboard.data.model.PersonCredit
 import org.knp.bingeboard.data.model.PersonDetails
 import org.knp.bingeboard.ui.components.glassPill
 import org.knp.bingeboard.ui.components.glassSurface
-import org.knp.bingeboard.ui.theme.LiquidGradientBrush
+import org.knp.bingeboard.ui.theme.DarkBackground
 import org.knp.bingeboard.ui.theme.LocalThemeIsDark
-import org.knp.bingeboard.ui.theme.Primary
 
 @Composable
 fun PersonScreen(
@@ -64,22 +63,17 @@ fun PersonScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = LocalThemeIsDark.current
 
-    val backgroundModifier = if (isDark) {
-        Modifier.background(LiquidGradientBrush)
-    } else {
-        Modifier.background(MaterialTheme.colorScheme.background)
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .then(backgroundModifier)
+            .background(if (isDark) DarkBackground else MaterialTheme.colorScheme.background)
     ) {
         when {
             uiState.isLoading -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = Primary
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 2.dp
                 )
             }
             uiState.error != null -> {
@@ -92,13 +86,13 @@ fun PersonScreen(
                     Text(
                         text = "Failed to load details",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = uiState.error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
                 }
             }
@@ -126,7 +120,7 @@ private fun PersonContent(
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
-        // Header with photo
+        // Hero header with photo
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -145,15 +139,15 @@ private fun PersonContent(
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color.Black.copy(alpha = 0.5f),
+                                Color.Black.copy(alpha = 0.4f),
                                 Color.Transparent,
-                                Color.Black.copy(alpha = 0.8f)
+                                Color.Black.copy(alpha = 0.85f)
                             )
                         )
                     )
             )
 
-            // Back button
+            // Back button — glass pill
             IconButton(
                 onClick = onBackClick,
                 modifier = Modifier
@@ -169,7 +163,7 @@ private fun PersonContent(
                 )
             }
 
-            // Name at bottom
+            // Name at bottom of hero
             Text(
                 text = person.name,
                 style = MaterialTheme.typography.headlineMedium,
@@ -181,10 +175,10 @@ private fun PersonContent(
             )
         }
 
-        // Content below header
+        // Content below hero
         Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Personal info
             val hasInfo = person.birthday != null || person.gender != null || person.birthPlace != null
@@ -259,7 +253,7 @@ private fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, text:
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Primary,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(14.dp)
         )
         Text(

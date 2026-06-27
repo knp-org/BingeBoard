@@ -9,15 +9,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Primary,
-    onPrimary = Color.White,
+    primary = AccentWhite,
+    onPrimary = Color.Black,
     background = DarkBackground,
     onBackground = DarkOnBackground,
     surface = DarkSurface,
@@ -29,7 +28,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Primary,
+    primary = Color(0xFF1A1A1A),
     onPrimary = Color.White,
     background = LightBackground,
     onBackground = LightOnBackground,
@@ -39,16 +38,6 @@ private val LightColorScheme = lightColorScheme(
     onSurfaceVariant = LightOnSurfaceVariant,
     outline = GlassLightBorder,
     outlineVariant = GlassLightBorder
-)
-
-/** Gradient brush for the dark mode background (liquid glass effect). */
-val LiquidGradientBrush = Brush.linearGradient(
-    colors = listOf(DarkGradient1, DarkGradient2, DarkGradient3, DarkGradient4)
-)
-
-/** Gradient brush for the title text (blue → purple). */
-val TitleGradientBrush = Brush.horizontalGradient(
-    colors = listOf(GradientBlue, GradientPurple)
 )
 
 val LocalThemeIsDark = compositionLocalOf { false }
@@ -71,7 +60,9 @@ fun BingeBoardTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
+            @Suppress("DEPRECATION")
             window.statusBarColor = Color.Transparent.toArgb()
+            @Suppress("DEPRECATION")
             window.navigationBarColor = Color.Transparent.toArgb()
             WindowCompat.getInsetsController(window, view).apply {
                 isAppearanceLightStatusBars = !isAppInDarkTheme

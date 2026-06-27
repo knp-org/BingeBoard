@@ -55,9 +55,8 @@ import org.knp.bingeboard.data.model.LocaleOption
 import org.knp.bingeboard.data.repository.ThemeMode
 import org.knp.bingeboard.ui.components.AppHeader
 import org.knp.bingeboard.ui.components.glassSurface
-import org.knp.bingeboard.ui.theme.LiquidGradientBrush
+import org.knp.bingeboard.ui.theme.DarkBackground
 import org.knp.bingeboard.ui.theme.LocalThemeIsDark
-import org.knp.bingeboard.ui.theme.Primary
 
 // ── Settings Screen ─────────────────────────────────────────────
 
@@ -79,16 +78,11 @@ fun SettingsScreen(
     val timezoneOptions = viewModel.localeOptionsProvider.timezones
 
     val isDark = LocalThemeIsDark.current
-    val backgroundModifier = if (isDark) {
-        Modifier.background(LiquidGradientBrush)
-    } else {
-        Modifier.background(MaterialTheme.colorScheme.background)
-    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .then(backgroundModifier)
+            .background(if (isDark) DarkBackground else MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -101,7 +95,7 @@ fun SettingsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 // ── Region & Locale Section ───────────────────────────
@@ -186,19 +180,21 @@ fun SettingsScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+                        // Liquid Glass toggle: white active, translucent gray track
                         Switch(
                             checked = useTvdb,
                             onCheckedChange = { viewModel.updateUseTvdb(it) },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Primary,
-                                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                uncheckedThumbColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                uncheckedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                             )
                         )
                     }
 
                     if (useTvdb) {
+                        // Liquid Glass text field: translucent bg, hairline border, white cursor
                         OutlinedTextField(
                             value = tvdbApiKey,
                             onValueChange = { viewModel.updateTvdbApiKey(it) },
@@ -210,13 +206,14 @@ fun SettingsScreen(
                                 Icon(
                                     imageVector = Icons.Outlined.VpnKey,
                                     contentDescription = null,
-                                    tint = Primary
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Primary,
-                                focusedLabelColor = Primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                                focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                cursorColor = MaterialTheme.colorScheme.primary
                             )
                         )
                     }
@@ -283,7 +280,7 @@ private fun SettingsDropdown(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
                 .clickable { expanded = true }
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -293,7 +290,7 @@ private fun SettingsDropdown(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = Primary,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
@@ -335,7 +332,7 @@ private fun SettingsDropdown(
                                 Icon(
                                     imageVector = Icons.Filled.Check,
                                     contentDescription = "Selected",
-                                    tint = Primary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -360,7 +357,8 @@ private fun ThemeOptionCard(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val bgColor = if (isSelected) Primary.copy(alpha = 0.15f) else Color.Transparent
+    // Liquid Glass: selected uses white highlight overlay, not blue
+    val bgColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
 
     Row(
         modifier = Modifier
@@ -391,7 +389,7 @@ private fun ThemeOptionCard(
             Icon(
                 imageVector = Icons.Filled.Check,
                 contentDescription = "Selected",
-                tint = Primary,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )
         }

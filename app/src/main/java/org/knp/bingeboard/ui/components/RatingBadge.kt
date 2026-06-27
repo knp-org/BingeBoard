@@ -13,14 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import org.knp.bingeboard.ui.theme.StarYellow
 
 @Composable
 fun RatingBadge(
     rating: Double,
     modifier: Modifier = Modifier,
-    starColor: Color = StarYellow,
-    textColor: Color = Color.LightGray
+    starColor: Color = MaterialTheme.colorScheme.primary,
+    textColor: Color = MaterialTheme.colorScheme.onSurfaceVariant
 ) {
     Row(
         modifier = modifier,
